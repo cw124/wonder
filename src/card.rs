@@ -3,7 +3,7 @@ use crate::power::PerGameItemReward;
 use crate::power::Power;
 use crate::resources::{ProducedResources, Resources};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Card {
 
     // Age 1
@@ -12,6 +12,8 @@ pub enum Card {
     // Brown
     LumberYard,
     TreeFarm,
+    StonePit,
+    Quarry,
 
     // Grey
     Loom,
@@ -43,7 +45,7 @@ enum Colour {
     Yellow,
     Red,
     Green,
-    Purple
+    Purple,
 }
 
 impl Card {
@@ -51,6 +53,8 @@ impl Card {
         match self {
             Card::LumberYard => "Lumber Yard",
             Card::TreeFarm => "Tree Fram",
+            Card::StonePit => "Stone Pit",
+            Card::Quarry => "Quarry",
             Card::Loom => "Loom",
             Card::Baths => "Baths",
             Card::Tavern => "Tavern",
@@ -65,6 +69,8 @@ impl Card {
         match self {
             Card::LumberYard => vec![3, 4],
             Card::TreeFarm => vec![6],
+            Card::StonePit => vec![3, 5],
+            Card::Quarry => vec![3, 4],
             Card::Loom => vec![3, 6],
             Card::Baths => vec![3, 7],
             Card::Tavern => vec![4, 5, 7],
@@ -79,6 +85,8 @@ impl Card {
         match self {
             Card::LumberYard => Resources::free(),
             Card::TreeFarm => Resources::coins(1),
+            Card::StonePit => Resources::free(),
+            Card::Quarry => Resources::coins(1),
             Card::Loom => Resources::free(),
             Card::Baths => Resources::stone(1),
             Card::Tavern => Resources::free(),
@@ -102,6 +110,8 @@ impl Card {
         match self {
             Card::LumberYard => Colour::Brown,
             Card::TreeFarm => Colour::Brown,
+            Card::StonePit => Colour::Brown,
+            Card::Quarry => Colour::Brown,
             Card::Loom => Colour::Blue,
             Card::Baths => Colour::Blue,
             Card::Tavern => Colour::Yellow,
@@ -116,12 +126,23 @@ impl Card {
         match self {
             Card::LumberYard => Power::PurchasableProducer(ProducedResources::Single(Resources::wood(1))),
             Card::TreeFarm => Power::PurchasableProducer(ProducedResources::Choice(vec![Resources::wood(1), Resources::clay(1)])),
+            Card::StonePit => Power::Producer(ProducedResources::Single(Resources::stone(1))),
+            Card::Quarry => Power::Producer(ProducedResources::Single(Resources::stone(2))),
             Card::Loom => Power::PurchasableProducer(ProducedResources::Single(Resources::loom(1))),
             Card::Baths => Power::VictoryPoints(3),
             Card::Tavern => Power::Coins(5),
             Card::EastTradingPost => Power::BuyAntiClockwise,
             Card::Aqueduct => Power::VictoryPoints(5),
-            Card::Forum => Power::Producer(ProducedResources::Choice(vec![Resources::wood(1), Resources::stone(1), Resources::ore(1), Resources::clay(1)])),
+            Card::Forum => Power::Producer(
+                ProducedResources::Choice(
+                    vec![
+                        Resources::wood(1),
+                        Resources::stone(1),
+                        Resources::ore(1),
+                        Resources::clay(1)
+                    ]
+                )
+            ),
             Card::Vineyard => Power::PerGameItemRewards(vec![PerGameItemReward {
                 game_item: |game_item| match game_item {
                     CountableGameItem::CountableCard(card) if card.colour() == Colour::Brown => true,
@@ -130,7 +151,7 @@ impl Card {
                 me: true,
                 neighbours: true,
                 coins_per_thing: 1,
-                points_per_thing: 0
+                points_per_thing: 0,
             }])
         }
     }
