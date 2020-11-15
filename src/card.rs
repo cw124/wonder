@@ -3,7 +3,7 @@ use crate::power::PerGameItemReward;
 use crate::power::Power;
 use crate::resources::{ProducedResources, Resources};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[allow(dead_code)]
 pub enum Card {
 
@@ -868,9 +868,9 @@ impl Card {
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
                     game_item: Box::new(|game_item| match game_item {
                         CountableGameItem::CountableCard(card) if
-                                card.info().colour == Colour::Brown ||
-                                card.info().colour == Colour::Grey ||
-                                card.info().colour == Colour::Purple => true,
+                        card.info().colour == Colour::Brown ||
+                            card.info().colour == Colour::Grey ||
+                            card.info().colour == Colour::Purple => true,
                         _ => false
                     }),
                     me: true,

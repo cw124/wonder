@@ -11,7 +11,6 @@ mod player;
 fn main() {
     let card = Card::Baths;
     println!("Baths cost {:?}", card.cost());
-
     let player = PlayerBoard::new(Wonder::ColossusOfRhodesA);
     println!("Can play Tree Farm? {}", player.can_play(Card::TreeFarm));
 }
