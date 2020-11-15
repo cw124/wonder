@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, SubAssign};
+use std::ops::{AddAssign};
 
 #[derive(Default)]
 #[derive(Debug)]
@@ -51,6 +51,37 @@ impl Resources {
 
     pub fn papyrus(num: u32) -> Resources {
         return Resources { papyrus: num, ..Default::default() }
+    }
+
+    /// If this Resources object represents the resources at a user's disposal, then returns `true`
+    /// if the user can afford a card whose cost is represented by the given Resources object.
+    ///
+    /// More formally, returns `true` if and only if, for each resource type, this Resources object
+    /// has at least as much of the resource type as the given Resources object.
+    pub fn can_afford(&self, other: &Self) -> bool {
+        self.coins >= other.coins &&
+            self.wood >= other.wood &&
+            self.stone >= other.stone &&
+            self.ore >= other.ore &&
+            self.clay >= other.clay &&
+            self.glass >= other.glass &&
+            self.loom >= other.loom &&
+            self.papyrus >= other.papyrus
+    }
+}
+
+impl AddAssign<&Resources> for Resources {
+    fn add_assign(&mut self, other: &Self) {
+        *self = Self {
+            coins: self.coins + other.coins,
+            wood: self.wood + other.wood,
+            stone: self.stone + other.stone,
+            ore: self.ore + other.ore,
+            clay: self.clay + other.clay,
+            glass: self.glass + other.glass,
+            loom: self.loom + other.loom,
+            papyrus: self.papyrus + other.papyrus
+        }
     }
 }
 
