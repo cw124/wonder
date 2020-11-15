@@ -103,7 +103,7 @@ mod tests {
     use crate::wonder::Wonder;
 
     #[test]
-    fn should_can_play_return_true_when_player_can_afford_card() {
+    fn can_play_return_true_when_player_can_afford_card() {
         // TODO: @Before etc
         let player = create_player();
         assert_eq!(true, player.can_play(Card::LumberYard));
