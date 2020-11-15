@@ -13,7 +13,7 @@ impl Wonder {
         }
     }
 
-    fn starting_resource(&self) -> Resources {
+    pub fn starting_resource(&self) -> Resources {
         match self {
             Wonder::ColossusOfRhodesA => Resources::ore(1),
         }
