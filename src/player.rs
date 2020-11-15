@@ -6,8 +6,20 @@ use crate::wonder::Wonder;
 pub struct PlayerBoard {
     wonder: Wonder,
     built_structures: Vec<Card>,
-    built_wonder_stages: Vec<Option<Card>>,  // TODO: how to represent this?
+    built_wonder_stages: Vec<Option<Card>>,
+    // TODO: how to represent this?
     coins: u32,
+}
+
+impl PlayerBoard {
+    pub(crate) fn build_structure(&mut self, structure: Card) -> bool {
+        return if self.can_play(structure) {
+            self.built_structures.push(structure);
+            true
+        } else {
+            false
+        };
+    }
 }
 
 impl PlayerBoard {
@@ -16,8 +28,8 @@ impl PlayerBoard {
             wonder,
             built_structures: vec![],
             built_wonder_stages: vec![],
-            coins: 3
-        }
+            coins: 3,
+        };
     }
 
     /// Returns `true` if the user can afford to play the given card, given the resources the player
@@ -36,17 +48,17 @@ impl PlayerBoard {
                 // TODO: can we write these four options more succinctly?
                 Power::PurchasableProducer(ProducedResources::Single(resources)) => {
                     available_resources += &resources;
-                },
+                }
                 Power::Producer(ProducedResources::Single(resources)) => {
                     available_resources += &resources;
-                },
+                }
 
                 Power::PurchasableProducer(ProducedResources::Choice(choice)) => {
                     choices.push(choice);
-                },
+                }
                 Power::Producer(ProducedResources::Choice(choice)) => {
                     choices.push(choice);
-                },
+                }
 
                 _ => {}
             }
@@ -81,5 +93,49 @@ impl PlayerBoard {
         }
 
         return false;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::intrinsics::transmute;
+
+    use crate::card::Card;
+    // This is how you write unit tests in rust, embedded in module file.
+    use crate::player::PlayerBoard;
+    use crate::wonder::Wonder;
+
+    #[test]
+    fn should_can_play_return_true_when_player_can_afford_card() {
+        // TODO: @Before etc
+        let player = create_player();
+        assert_eq!(true, player.can_play(Card::LumberYard));
+    }
+
+    #[test]
+    fn should_can_play_return_true_after_player_builds_required_resources() {
+        let mut player = create_player();
+        player.build_structure(Card::StonePit);
+        assert_eq!(false, player.can_play(Card::Aqueduct));
+        assert_eq!(true, player.build_structure(Card::Quarry));
+        assert_eq!(true, player.can_play(Card::Aqueduct));
+    }
+
+
+    #[test]
+    fn should_can_play_return_false_when_player_cannot_pay() {
+        let mut player = PlayerBoard::new(Wonder::ColossusOfRhodesA);
+        player.coins = 0; //TODO introduce a Bank type to allow for double-entry bookkeeping instead of this
+        assert_eq!(false, player.can_play(Card::TreeFarm));
+    }
+
+    #[test]
+    fn should_can_play_return_false_when_both_choice_resources_needed() {
+        // TODO implement
+    }
+
+    fn create_player() -> PlayerBoard {
+        let mut player = PlayerBoard::new(Wonder::ColossusOfRhodesA);
+        player
     }
 }
