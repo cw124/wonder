@@ -7,8 +7,7 @@ use crate::wonder::Wonder;
 pub struct PlayerBoard {
     wonder: Wonder,
     built_structures: Vec<Card>,
-    built_wonder_stages: Vec<Option<Card>>,
-    // TODO: how to represent this?
+    built_wonder_stages: Vec<Option<Card>>, // TODO: how to represent this?
     coins: u32,
 }
 
@@ -100,9 +99,7 @@ impl PlayerBoard {
 #[cfg(test)]
 mod tests {
     use std::intrinsics::transmute;
-
     use crate::card::Card;
-    // This is how you write unit tests in rust, embedded in module file.
     use crate::player::PlayerBoard;
     use crate::wonder::Wonder;
 
@@ -121,7 +118,6 @@ mod tests {
         assert_eq!(true, player.build_structure(Card::Quarry));
         assert_eq!(true, player.can_play(Card::Aqueduct));
     }
-
 
     #[test]
     fn should_can_play_return_false_when_player_cannot_pay() {
