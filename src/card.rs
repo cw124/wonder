@@ -46,92 +46,133 @@ enum Colour {
     Purple
 }
 
+struct CardInfo<'a> {
+    name: &'a str,
+    players_needed: Vec<u32>,
+    cost: Resources,
+    chains_to: Vec<Card>,
+    colour: Colour,
+    power: Power,
+}
+
 impl Card {
-    fn name(&self) -> &str {
+    fn info(&self) -> CardInfo {
         match self {
-            Card::LumberYard => "Lumber Yard",
-            Card::TreeFarm => "Tree Fram",
-            Card::Loom => "Loom",
-            Card::Baths => "Baths",
-            Card::Tavern => "Tavern",
-            Card::EastTradingPost => "East Trading Post",
-            Card::Aqueduct => "Aqueduct",
-            Card::Forum => "Forum",
-            Card::Vineyard => "Vineyard",
+            Card::LumberYard => CardInfo {
+                name: "Lumber Yard",
+                players_needed: vec![3, 4],
+                cost: Resources::free(),
+                chains_to: vec![],
+                colour: Colour::Brown,
+                power: Power::PurchasableProducer(ProducedResources::Single(Resources::wood(1))),
+            },
+
+            Card::TreeFarm => CardInfo {
+                name: "Tree Farm",
+                players_needed: vec![6],
+                cost: Resources::coins(1),
+                chains_to: vec![],
+                colour: Colour::Brown,
+                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
+                    Resources::wood(1),
+                    Resources::clay(1)])),
+            },
+
+            Card::Loom => CardInfo {
+                name: "Loom",
+                players_needed: vec![3, 6],
+                cost: Resources::free(),
+                chains_to: vec![],
+                colour: Colour::Blue,
+                power: Power::PurchasableProducer(ProducedResources::Single(Resources::loom(1))),
+            },
+
+            Card::Baths => CardInfo {
+                name: "Baths",
+                players_needed: vec![3, 7],
+                cost: Resources::stone(1),
+                chains_to: vec![Card::Aqueduct],
+                colour: Colour::Blue,
+                power: Power::VictoryPoints(3),
+            },
+
+            Card::Tavern => CardInfo {
+                name: "Tavern",
+                players_needed: vec![4, 5, 7],
+                cost: Resources::free(),
+                chains_to: vec![],
+                colour: Colour::Yellow,
+                power: Power::Coins(5),
+            },
+
+            Card::EastTradingPost => CardInfo {
+                name: "East Trading Post",
+                players_needed: vec![3, 7],
+                cost: Resources::free(),
+                chains_to: vec![Card::Forum],
+                colour: Colour::Yellow,
+                power: Power::BuyAntiClockwise,
+            },
+
+            Card::Aqueduct => CardInfo {
+                name: "Aqueduct",
+                players_needed: vec![3, 7],
+                cost: Resources::stone(3),
+                chains_to: vec![],
+                colour: Colour::Blue,
+                power: Power::VictoryPoints(5),
+            },
+
+            Card::Forum => CardInfo {
+                name: "Forum",
+                players_needed: vec![3, 6, 7],
+                cost: Resources::clay(2),
+                chains_to: vec![],
+                colour: Colour::Yellow,
+                power: Power::Producer(ProducedResources::Choice(vec![
+                    Resources::wood(1),
+                    Resources::stone(1),
+                    Resources::ore(1),
+                    Resources::clay(1)])),
+            },
+
+            Card::Vineyard => CardInfo {
+                name: "Vineyard",
+                players_needed: vec![3, 6],
+                cost: Resources::free(),
+                chains_to: vec![],
+                colour: Colour::Yellow,
+                power: Power::PerGameItemRewards(vec![PerGameItemReward {
+                    game_item: |game_item| match game_item {
+                        CountableGameItem::CountableCard(card) if card.info().colour == Colour::Brown => true,
+                        _ => false
+                    },
+                    me: true,
+                    neighbours: true,
+                    coins_per_thing: 1,
+                    points_per_thing: 0
+                }])
+            },
         }
     }
 
-    fn players_needed(&self) -> Vec<u32> {
-        match self {
-            Card::LumberYard => vec![3, 4],
-            Card::TreeFarm => vec![6],
-            Card::Loom => vec![3, 6],
-            Card::Baths => vec![3, 7],
-            Card::Tavern => vec![4, 5, 7],
-            Card::EastTradingPost => vec![3, 7],
-            Card::Aqueduct => vec![3, 7],
-            Card::Forum => vec![3, 6, 7],
-            Card::Vineyard => vec![3, 6],
-        }
+    pub fn players_needed(&self) -> Vec<u32> {
+        self.info().players_needed
     }
 
     pub fn cost(&self) -> Resources {
-        match self {
-            Card::LumberYard => Resources::free(),
-            Card::TreeFarm => Resources::coins(1),
-            Card::Loom => Resources::free(),
-            Card::Baths => Resources::stone(1),
-            Card::Tavern => Resources::free(),
-            Card::EastTradingPost => Resources::free(),
-            Card::Aqueduct => Resources::stone(3),
-            Card::Forum => Resources::clay(2),
-            Card::Vineyard => Resources::free(),
-        }
+        self.info().cost
     }
 
-    fn chains_to(&self) -> Vec<Card> {
-        match self {
-            Card::Baths => vec![Card::Aqueduct],
-            Card::EastTradingPost => vec![Card::Forum],
-            // Card::Forum => vec![Card::Haven],
-            _ => vec![],
-        }
+    pub fn chains_to(&self) -> Vec<Card> {
+        self.info().chains_to
     }
 
-    fn colour(&self) -> Colour {
-        match self {
-            Card::LumberYard => Colour::Brown,
-            Card::TreeFarm => Colour::Brown,
-            Card::Loom => Colour::Blue,
-            Card::Baths => Colour::Blue,
-            Card::Tavern => Colour::Yellow,
-            Card::EastTradingPost => Colour::Yellow,
-            Card::Aqueduct => Colour::Blue,
-            Card::Forum => Colour::Blue,
-            Card::Vineyard => Colour::Yellow,
-        }
+    pub fn colour(&self) -> Colour {
+        self.info().colour
     }
 
     pub fn power(&self) -> Power {
-        match self {
-            Card::LumberYard => Power::PurchasableProducer(ProducedResources::Single(Resources::wood(1))),
-            Card::TreeFarm => Power::PurchasableProducer(ProducedResources::Choice(vec![Resources::wood(1), Resources::clay(1)])),
-            Card::Loom => Power::PurchasableProducer(ProducedResources::Single(Resources::loom(1))),
-            Card::Baths => Power::VictoryPoints(3),
-            Card::Tavern => Power::Coins(5),
-            Card::EastTradingPost => Power::BuyAntiClockwise,
-            Card::Aqueduct => Power::VictoryPoints(5),
-            Card::Forum => Power::Producer(ProducedResources::Choice(vec![Resources::wood(1), Resources::stone(1), Resources::ore(1), Resources::clay(1)])),
-            Card::Vineyard => Power::PerGameItemRewards(vec![PerGameItemReward {
-                game_item: |game_item| match game_item {
-                    CountableGameItem::CountableCard(card) if card.colour() == Colour::Brown => true,
-                    _ => false
-                },
-                me: true,
-                neighbours: true,
-                coins_per_thing: 1,
-                points_per_thing: 0
-            }])
-        }
+        self.info().power
     }
 }
