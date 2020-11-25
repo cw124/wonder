@@ -73,7 +73,9 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resources::wood(1), Resources::clay(1)])),
+                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
+                    Resources::wood(1),
+                    Resources::clay(1)])),
             },
 
             Card::Loom => CardInfo {
@@ -127,7 +129,11 @@ impl Card {
                 cost: Resources::clay(2),
                 chains_to: vec![],
                 colour: Colour::Yellow,
-                power: Power::Producer(ProducedResources::Choice(vec![Resources::wood(1), Resources::stone(1), Resources::ore(1), Resources::clay(1)])),
+                power: Power::Producer(ProducedResources::Choice(vec![
+                    Resources::wood(1),
+                    Resources::stone(1),
+                    Resources::ore(1),
+                    Resources::clay(1)])),
             },
 
             Card::Vineyard => CardInfo {
