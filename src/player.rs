@@ -3,6 +3,7 @@ use crate::power::Power;
 use crate::resources::{ProducedResources, Resources};
 use crate::wonder::Wonder;
 
+#[allow(dead_code)]
 pub struct PlayerBoard {
     wonder: Wonder,
     built_structures: Vec<Card>,
