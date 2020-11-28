@@ -6,6 +6,7 @@ pub enum Wonder {
     ColossusOfRhodesA
 }
 
+#[allow(dead_code)]
 impl Wonder {
     fn name(&self) -> &str {
         match self {
@@ -20,10 +21,12 @@ impl Wonder {
     }
 }
 
+#[allow(dead_code)]
 pub enum WonderSlot {
     ColossusOfRhodesASlot1
 }
 
+#[allow(dead_code)]
 impl WonderSlot {
     pub fn cost(&self) -> Resources {
         match self {

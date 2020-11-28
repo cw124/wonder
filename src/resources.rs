@@ -4,16 +4,16 @@ use std::ops::{AddAssign};
 #[derive(Debug)]
 #[derive(Clone)]
 pub struct Resources {
-    coins: u32,
+    pub coins: u32,
 
-    wood: u32,
-    stone: u32,
-    ore: u32,
-    clay: u32,
+    pub wood: u32,
+    pub stone: u32,
+    pub ore: u32,
+    pub clay: u32,
 
-    glass: u32,
-    loom: u32,
-    papyrus: u32,
+    pub glass: u32,
+    pub loom: u32,
+    pub papyrus: u32,
 }
 
 impl Resources {
