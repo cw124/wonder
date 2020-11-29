@@ -1,16 +1,12 @@
-use crate::card::Card;
-use crate::player::PlayerBoard;
-use crate::wonder::{WonderType, WonderSide};
+use crate::game::Game;
 
 mod card;
 mod wonder;
 mod power;
 mod resources;
 mod player;
+mod game;
 
 fn main() {
-    let card = Card::Baths;
-    println!("Baths cost {:?}", card.cost());
-    let player = PlayerBoard::new(WonderType::ColossusOfRhodes, WonderSide::A);
-    println!("Can play Tree Farm? {}", player.can_play(Card::TreeFarm));
+    println!("{:?}", Game::new(4));
 }
