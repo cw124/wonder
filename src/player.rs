@@ -3,16 +3,18 @@ use crate::power::Power;
 use crate::resources::{ProducedResources, Resources};
 use crate::wonder::{WonderBoard, WonderType, WonderSide};
 
+#[derive(Debug)]
 #[allow(dead_code)]
-pub struct PlayerBoard {
+pub struct Player {
     wonder: WonderBoard,
     built_structures: Vec<Card>,
     built_wonder_stages: Vec<Option<Card>>, // TODO: how to represent this?
     coins: u32,
+    hand: Vec<Card>,
 }
 
 #[allow(dead_code)]
-impl PlayerBoard {
+impl Player {
     pub(crate) fn build_structure(&mut self, structure: Card) -> bool {
         return if self.can_play(structure) {
             self.built_structures.push(structure);
@@ -23,13 +25,14 @@ impl PlayerBoard {
     }
 }
 
-impl PlayerBoard {
-    pub fn new(wonder_type: WonderType, wonder_side: WonderSide) -> PlayerBoard {
-        return PlayerBoard {
+impl Player {
+    pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
+        return Player {
             wonder: WonderBoard { wonder_type, wonder_side },
             built_structures: vec![],
             built_wonder_stages: vec![],
             coins: 3,
+            hand
         };
     }
 
@@ -100,7 +103,7 @@ impl PlayerBoard {
 #[cfg(test)]
 mod tests {
     use crate::card::Card;
-    use crate::player::PlayerBoard;
+    use crate::player::Player;
     use crate::wonder::{WonderType, WonderSide};
 
     #[test]
@@ -121,7 +124,7 @@ mod tests {
 
     #[test]
     fn should_can_play_return_false_when_player_cannot_pay() {
-        let mut player = PlayerBoard::new(WonderType::ColossusOfRhodes, WonderSide::A);
+        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![]);
         player.coins = 0; //TODO introduce a Bank type to allow for double-entry bookkeeping instead of this
         assert_eq!(false, player.can_play(Card::TreeFarm));
     }
@@ -131,7 +134,7 @@ mod tests {
         // TODO implement
     }
 
-    fn create_player() -> PlayerBoard {
-        PlayerBoard::new(WonderType::ColossusOfRhodes, WonderSide::A)
+    fn create_player() -> Player {
+        Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![])
     }
 }

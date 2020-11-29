@@ -1,9 +1,14 @@
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
 use crate::power::{CountableGameItem, ScienceItem};
 use crate::power::PerGameItemReward;
 use crate::power::Power;
 use crate::resources::{ProducedResources, Resources};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 #[allow(dead_code)]
 pub enum Card {
 
@@ -131,6 +136,13 @@ pub enum Card {
     BuildersGuild
 }
 
+#[derive(Debug, PartialEq)]
+pub enum Age {
+    First,
+    Second,
+    Third
+}
+
 #[derive(PartialEq)]
 pub enum Colour {
     Brown,
@@ -145,6 +157,7 @@ pub enum Colour {
 #[allow(dead_code)]
 struct CardInfo<'a> {
     name: &'a str,
+    age: Age,
     players_needed: Vec<u32>,
     cost: Resources,
     chains_to: Vec<Card>,
@@ -158,6 +171,7 @@ impl Card {
         match self {
             Card::LumberYard => CardInfo {
                 name: "Lumber Yard",
+                age: Age::First,
                 players_needed: vec![3, 4],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -167,6 +181,7 @@ impl Card {
 
             Card::StonePit => CardInfo {
                 name: "Stone Pit",
+                age: Age::First,
                 players_needed: vec![3, 5],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -176,6 +191,7 @@ impl Card {
 
             Card::ClayPool => CardInfo {
                 name: "Clay Pool",
+                age: Age::First,
                 players_needed: vec![3, 5],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -185,6 +201,7 @@ impl Card {
 
             Card::OreVein => CardInfo {
                 name: "Ore Vein",
+                age: Age::First,
                 players_needed: vec![3, 4],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -194,6 +211,7 @@ impl Card {
 
             Card::TreeFarm => CardInfo {
                 name: "Tree Farm",
+                age: Age::First,
                 players_needed: vec![6],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -205,6 +223,7 @@ impl Card {
 
             Card::Excavation => CardInfo {
                 name: "Excavation",
+                age: Age::First,
                 players_needed: vec![4],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -216,6 +235,7 @@ impl Card {
 
             Card::ClayPit => CardInfo {
                 name: "Clay Pit",
+                age: Age::First,
                 players_needed: vec![3],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -227,6 +247,7 @@ impl Card {
 
             Card::TimberYard => CardInfo {
                 name: "Timber Yard",
+                age: Age::First,
                 players_needed: vec![3],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -238,6 +259,7 @@ impl Card {
 
             Card::ForestCave => CardInfo {
                 name: "Forest Cave",
+                age: Age::First,
                 players_needed: vec![5],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -249,6 +271,7 @@ impl Card {
 
             Card::Mine => CardInfo {
                 name: "Mine",
+                age: Age::First,
                 players_needed: vec![6],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -260,6 +283,7 @@ impl Card {
 
             Card::Loom1 => CardInfo {
                 name: "Loom",
+                age: Age::First,
                 players_needed: vec![3, 6],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -269,6 +293,7 @@ impl Card {
 
             Card::Glassworks1 => CardInfo {
                 name: "Glassworks",
+                age: Age::First,
                 players_needed: vec![3, 6],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -278,6 +303,7 @@ impl Card {
 
             Card::Press1 => CardInfo {
                 name: "Press",
+                age: Age::First,
                 players_needed: vec![3, 6],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -287,6 +313,7 @@ impl Card {
 
             Card::Pawnshop => CardInfo {
                 name: "Pawnshop",
+                age: Age::First,
                 players_needed: vec![4, 7],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -296,6 +323,7 @@ impl Card {
 
             Card::Baths => CardInfo {
                 name: "Baths",
+                age: Age::First,
                 players_needed: vec![3, 7],
                 cost: Resources::stone(1),
                 chains_to: vec![Card::Aqueduct],
@@ -305,6 +333,7 @@ impl Card {
 
             Card::Altar => CardInfo {
                 name: "Altar",
+                age: Age::First,
                 players_needed: vec![3, 5],
                 cost: Resources::free(),
                 chains_to: vec![Card::Temple],
@@ -314,6 +343,7 @@ impl Card {
 
             Card::Theater => CardInfo {
                 name: "Theater",
+                age: Age::First,
                 players_needed: vec![3, 6],
                 cost: Resources::free(),
                 chains_to: vec![Card::Statue],
@@ -323,6 +353,7 @@ impl Card {
 
             Card::Tavern => CardInfo {
                 name: "Tavern",
+                age: Age::First,
                 players_needed: vec![4, 5, 7],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -332,6 +363,7 @@ impl Card {
 
             Card::EastTradingPost => CardInfo {
                 name: "East Trading Post",
+                age: Age::First,
                 players_needed: vec![3, 7],
                 cost: Resources::free(),
                 chains_to: vec![Card::Forum],
@@ -341,6 +373,7 @@ impl Card {
 
             Card::WestTradingPost => CardInfo {
                 name: "West Trading Post",
+                age: Age::First,
                 players_needed: vec![3, 7],
                 cost: Resources::free(),
                 chains_to: vec![Card::Forum],
@@ -350,6 +383,7 @@ impl Card {
 
             Card::Marketplace => CardInfo {
                 name: "Marketplace",
+                age: Age::First,
                 players_needed: vec![3, 6],
                 cost: Resources::free(),
                 chains_to: vec![Card::Caravansery],
@@ -359,6 +393,7 @@ impl Card {
 
             Card::Apothecary => CardInfo {
                 name: "Apothecary",
+                age: Age::First,
                 players_needed: vec![3, 5],
                 cost: Resources::loom(1),
                 chains_to: vec![Card::Stables, Card::Dispensary],
@@ -368,6 +403,7 @@ impl Card {
 
             Card::Workshop => CardInfo {
                 name: "Workshop",
+                age: Age::First,
                 players_needed: vec![3, 7],
                 cost: Resources::glass(1),
                 chains_to: vec![Card::ArcheryRange, Card::Laboratory],
@@ -377,6 +413,7 @@ impl Card {
 
             Card::Scriptorium => CardInfo {
                 name: "Scriptorium",
+                age: Age::First,
                 players_needed: vec![3, 4],
                 cost: Resources::papyrus(1),
                 chains_to: vec![Card::Courthouse, Card::Library],
@@ -386,6 +423,7 @@ impl Card {
 
             Card::Stockade => CardInfo {
                 name: "Stockade",
+                age: Age::First,
                 players_needed: vec![3, 7],
                 cost: Resources::wood(1),
                 chains_to: vec![],
@@ -395,6 +433,7 @@ impl Card {
 
             Card::Barracks => CardInfo {
                 name: "Barracks",
+                age: Age::First,
                 players_needed: vec![3, 5],
                 cost: Resources::ore(1),
                 chains_to: vec![],
@@ -404,6 +443,7 @@ impl Card {
 
             Card::GuardTower => CardInfo {
                 name: "Guard Tower",
+                age: Age::First,
                 players_needed: vec![3, 4],
                 cost: Resources::clay(1),
                 chains_to: vec![],
@@ -413,6 +453,7 @@ impl Card {
 
             Card::Sawmill => CardInfo {
                 name: "Sawmill",
+                age: Age::Second,
                 players_needed: vec![3, 4],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -422,6 +463,7 @@ impl Card {
 
             Card::Quarry => CardInfo {
                 name: "Quarry",
+                age: Age::Second,
                 players_needed: vec![3, 4],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -431,6 +473,7 @@ impl Card {
 
             Card::Brickyard => CardInfo {
                 name: "Brickyard",
+                age: Age::Second,
                 players_needed: vec![3, 4],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -440,6 +483,7 @@ impl Card {
 
             Card::Foundry => CardInfo {
                 name: "Foundry",
+                age: Age::Second,
                 players_needed: vec![3, 4],
                 cost: Resources::coins(1),
                 chains_to: vec![],
@@ -449,6 +493,7 @@ impl Card {
 
             Card::Loom2 => CardInfo {
                 name: "Loom",
+                age: Age::Second,
                 players_needed: vec![3, 5],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -458,6 +503,7 @@ impl Card {
 
             Card::Glassworks2 => CardInfo {
                 name: "Glassworks",
+                age: Age::Second,
                 players_needed: vec![3, 5],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -467,6 +513,7 @@ impl Card {
 
             Card::Press2 => CardInfo {
                 name: "Press",
+                age: Age::Second,
                 players_needed: vec![3, 5],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -476,6 +523,7 @@ impl Card {
 
             Card::Aqueduct => CardInfo {
                 name: "Aqueduct",
+                age: Age::Second,
                 players_needed: vec![3, 7],
                 cost: Resources::stone(3),
                 chains_to: vec![],
@@ -485,6 +533,7 @@ impl Card {
 
             Card::Temple => CardInfo {
                 name: "Temple",
+                age: Age::Second,
                 players_needed: vec![3, 6],
                 cost: Resources { wood: 1, clay: 1, glass: 1, ..Default::default() },
                 chains_to: vec![Card::Pantheon],
@@ -494,6 +543,7 @@ impl Card {
 
             Card::Statue => CardInfo {
                 name: "Statue",
+                age: Age::Second,
                 players_needed: vec![3, 7],
                 cost: Resources { wood: 1, ore: 2, ..Default::default() },
                 chains_to: vec![Card::Gardens],
@@ -503,6 +553,7 @@ impl Card {
 
             Card::Courthouse => CardInfo {
                 name: "Courthouse",
+                age: Age::Second,
                 players_needed: vec![3, 5],
                 cost: Resources { clay: 2, loom: 1, ..Default::default() },
                 chains_to: vec![],
@@ -512,6 +563,7 @@ impl Card {
 
             Card::Forum => CardInfo {
                 name: "Forum",
+                age: Age::Second,
                 players_needed: vec![3, 6, 7],
                 cost: Resources::clay(2),
                 chains_to: vec![Card::Haven],
@@ -524,6 +576,7 @@ impl Card {
 
             Card::Caravansery => CardInfo {
                 name: "Caravansery",
+                age: Age::Second,
                 players_needed: vec![3, 5, 6],
                 cost: Resources::wood(2),
                 chains_to: vec![Card::Lighthouse],
@@ -537,6 +590,7 @@ impl Card {
 
             Card::Vineyard => CardInfo {
                 name: "Vineyard",
+                age: Age::Second,
                 players_needed: vec![3, 6],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -546,6 +600,7 @@ impl Card {
 
             Card::Bazar => CardInfo {
                 name: "Bazar",
+                age: Age::Second,
                 players_needed: vec![4, 7],
                 cost: Resources::free(),
                 chains_to: vec![],
@@ -555,6 +610,7 @@ impl Card {
 
             Card::Dispensary => CardInfo {
                 name: "Dispensary",
+                age: Age::Second,
                 players_needed: vec![3, 4],
                 cost: Resources { ore: 2, glass: 1, ..Default::default() },
                 chains_to: vec![Card::Arena, Card::Lodge],
@@ -564,6 +620,7 @@ impl Card {
 
             Card::Laboratory => CardInfo {
                 name: "Laboratory",
+                age: Age::Second,
                 players_needed: vec![3, 5],
                 cost: Resources { clay: 2, papyrus: 1, ..Default::default() },
                 chains_to: vec![Card::SiegeWorkshop, Card::Observatory],
@@ -573,6 +630,7 @@ impl Card {
 
             Card::Library => CardInfo {
                 name: "Library",
+                age: Age::Second,
                 players_needed: vec![3, 6],
                 cost: Resources { stone: 2, loom: 1, ..Default::default() },
                 chains_to: vec![Card::Senate, Card::University],
@@ -582,6 +640,7 @@ impl Card {
 
             Card::School => CardInfo {
                 name: "School",
+                age: Age::Second,
                 players_needed: vec![3, 7],
                 cost: Resources { wood: 1, papyrus: 1, ..Default::default() },
                 chains_to: vec![Card::Academy, Card::Study],
@@ -591,6 +650,7 @@ impl Card {
 
             Card::Walls => CardInfo {
                 name: "Walls",
+                age: Age::Second,
                 players_needed: vec![3, 7],
                 cost: Resources::stone(3),
                 chains_to: vec![Card::Fortifications],
@@ -600,6 +660,7 @@ impl Card {
 
             Card::TrainingGround => CardInfo {
                 name: "Training Ground",
+                age: Age::Second,
                 players_needed: vec![4, 6, 7],
                 cost: Resources { wood: 1, ore: 2, ..Default::default() },
                 chains_to: vec![Card::Circus],
@@ -609,6 +670,7 @@ impl Card {
 
             Card::Stables => CardInfo {
                 name: "Stables",
+                age: Age::Second,
                 players_needed: vec![3, 5],
                 cost: Resources { ore: 1, clay: 1, wood: 1, ..Default::default() },
                 chains_to: vec![],
@@ -618,6 +680,7 @@ impl Card {
 
             Card::ArcheryRange => CardInfo {
                 name: "Archery Range",
+                age: Age::Second,
                 players_needed: vec![3, 6],
                 cost: Resources { wood: 2, ore: 1, ..Default::default() },
                 chains_to: vec![],
@@ -627,6 +690,7 @@ impl Card {
 
             Card::Pantheon => CardInfo {
                 name: "Pantheon",
+                age: Age::Third,
                 players_needed: vec![3, 6],
                 cost: Resources { clay: 2, ore: 1, papyrus: 1, loom: 1, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -636,6 +700,7 @@ impl Card {
 
             Card::Gardens => CardInfo {
                 name: "Gardens",
+                age: Age::Third,
                 players_needed: vec![3, 4],
                 cost: Resources { wood: 2, clay: 2, ..Default::default() },
                 chains_to: vec![],
@@ -645,6 +710,7 @@ impl Card {
 
             Card::TownHall => CardInfo {
                 name: "Town Hall",
+                age: Age::Third,
                 players_needed: vec![3, 5, 6],
                 cost: Resources { glass: 1, ore: 1, stone: 2, ..Default::default() },
                 chains_to: vec![],
@@ -654,6 +720,7 @@ impl Card {
 
             Card::Palace => CardInfo {
                 name: "Palace",
+                age: Age::Third,
                 players_needed: vec![3, 7],
                 cost: Resources { glass: 1, papyrus: 1, loom: 1, clay: 1, wood: 1, ore: 1, stone: 1, coins: 0 },
                 chains_to: vec![],
@@ -663,6 +730,7 @@ impl Card {
 
             Card::Senate => CardInfo {
                 name: "Senate",
+                age: Age::Third,
                 players_needed: vec![3, 5],
                 cost: Resources { ore: 1, stone: 1, wood: 2, ..Default::default() },
                 chains_to: vec![],
@@ -672,6 +740,7 @@ impl Card {
 
             Card::Haven => CardInfo {
                 name: "Haven",
+                age: Age::Third,
                 players_needed: vec![3, 4],
                 cost: Resources { loom: 1, ore: 1, wood: 1, ..Default::default() },
                 chains_to: vec![],
@@ -681,6 +750,7 @@ impl Card {
 
             Card::Lighthouse => CardInfo {
                 name: "Lighthouse",
+                age: Age::Third,
                 players_needed: vec![3, 6],
                 cost: Resources { glass: 1, stone: 1, ..Default::default() },
                 chains_to: vec![],
@@ -690,6 +760,7 @@ impl Card {
 
             Card::ChamberOfCommerce => CardInfo {
                 name: "Chamber Of Commerce",
+                age: Age::Third,
                 players_needed: vec![4, 6],
                 cost: Resources { clay: 2, papyrus: 1, ..Default::default() },
                 chains_to: vec![],
@@ -699,7 +770,8 @@ impl Card {
 
             Card::Arena => CardInfo {
                 name: "Arena",
-                players_needed: vec![4, 5, 7],
+                age: Age::Third,
+                players_needed: vec![3, 5, 7],
                 cost: Resources { ore: 1, stone: 2, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Yellow,
@@ -717,6 +789,7 @@ impl Card {
 
             Card::Lodge => CardInfo {
                 name: "Lodge",
+                age: Age::Third,
                 players_needed: vec![3, 6],
                 cost: Resources { clay: 2, loom: 1, papyrus: 1, ..Default::default() },
                 chains_to: vec![],
@@ -726,6 +799,7 @@ impl Card {
 
             Card::Observatory => CardInfo {
                 name: "Observatory",
+                age: Age::Third,
                 players_needed: vec![3, 7],
                 cost: Resources { ore: 2, glass: 1, loom: 1, ..Default::default() },
                 chains_to: vec![],
@@ -735,6 +809,7 @@ impl Card {
 
             Card::University => CardInfo {
                 name: "University",
+                age: Age::Third,
                 players_needed: vec![3, 4],
                 cost: Resources { wood: 2, papyrus: 1, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -744,6 +819,7 @@ impl Card {
 
             Card::Academy => CardInfo {
                 name: "Academy",
+                age: Age::Third,
                 players_needed: vec![3, 7],
                 cost: Resources { stone: 3, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -753,6 +829,7 @@ impl Card {
 
             Card::Study => CardInfo {
                 name: "Study",
+                age: Age::Third,
                 players_needed: vec![3, 5],
                 cost: Resources { wood: 1, papyrus: 1, loom: 1, ..Default::default() },
                 chains_to: vec![],
@@ -762,6 +839,7 @@ impl Card {
 
             Card::Fortifications => CardInfo {
                 name: "Fortifications",
+                age: Age::Third,
                 players_needed: vec![3, 7],
                 cost: Resources { stone: 1, ore: 3, ..Default::default() },
                 chains_to: vec![],
@@ -771,6 +849,7 @@ impl Card {
 
             Card::Circus => CardInfo {
                 name: "Circus",
+                age: Age::Third,
                 players_needed: vec![4, 5, 6],
                 cost: Resources { stone: 3, ore: 1, ..Default::default() },
                 chains_to: vec![],
@@ -780,6 +859,7 @@ impl Card {
 
             Card::Arsenal => CardInfo {
                 name: "Arsenal",
+                age: Age::Third,
                 players_needed: vec![3, 4, 7],
                 cost: Resources { ore: 1, wood: 2, loom: 1, ..Default::default() },
                 chains_to: vec![],
@@ -789,6 +869,7 @@ impl Card {
 
             Card::SiegeWorkshop => CardInfo {
                 name: "Siege Workshop",
+                age: Age::Third,
                 players_needed: vec![3, 5],
                 cost: Resources { wood: 1, clay: 3, ..Default::default() },
                 chains_to: vec![],
@@ -798,6 +879,7 @@ impl Card {
 
             Card::WorkersGuild => CardInfo {
                 name: "Workers Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { ore: 2, clay: 1, stone: 1, wood: 1, ..Default::default() },
                 chains_to: vec![],
@@ -807,6 +889,7 @@ impl Card {
 
             Card::CraftsmensGuild => CardInfo {
                 name: "Craftsmens Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { ore: 2, stone: 2, ..Default::default() },
                 chains_to: vec![],
@@ -816,6 +899,7 @@ impl Card {
 
             Card::TradersGuild => CardInfo {
                 name: "Traders Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { loom: 1, papyrus: 1, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -825,6 +909,7 @@ impl Card {
 
             Card::PhilosophersGuild => CardInfo {
                 name: "Philosophers Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { clay: 3, loom: 1, papyrus: 1, ..Default::default() },
                 chains_to: vec![],
@@ -834,6 +919,7 @@ impl Card {
 
             Card::SpiesGuild => CardInfo {
                 name: "Spies Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { clay: 3, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -843,6 +929,7 @@ impl Card {
 
             Card::StrategistsGuild => CardInfo {
                 name: "Strategists Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { ore: 2, stone: 1, loom: 1, ..Default::default() },
                 chains_to: vec![],
@@ -861,6 +948,7 @@ impl Card {
 
             Card::ShipownersGuild => CardInfo {
                 name: "Shipowners Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { wood: 3, papyrus: 1, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -882,6 +970,7 @@ impl Card {
 
             Card::ScientistsGuild => CardInfo {
                 name: "Scientists Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { wood: 2, ore: 2, papyrus: 1, ..Default::default() },
                 chains_to: vec![],
@@ -891,6 +980,7 @@ impl Card {
 
             Card::MagistratesGuild => CardInfo {
                 name: "Migistrates Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { wood: 3, stone: 1, loom: 1, ..Default::default() },
                 chains_to: vec![],
@@ -900,6 +990,7 @@ impl Card {
 
             Card::BuildersGuild => CardInfo {
                 name: "Builders Guild",
+                age: Age::Third,
                 players_needed: vec![3],
                 cost: Resources { stone: 2, clay: 2, glass: 1, ..Default::default() },
                 chains_to: vec![],
@@ -916,6 +1007,10 @@ impl Card {
                 }])
             },
         }
+    }
+
+    pub fn age(&self) -> Age {
+        self.info().age
     }
 
     pub fn players_needed(&self) -> Vec<u32> {
@@ -936,5 +1031,72 @@ impl Card {
 
     pub fn power(&self) -> Power {
         self.info().power
+    }
+}
+
+/// Creates a new, shuffled deck for the given age and number of players.
+pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {
+    let mut deck: Vec<Card> = vec![];
+    let mut guilds: Vec<Card> = vec![];
+
+    // Add all cards with the correct age and number of players needed, added guilds to a separate vector for the time
+    // being.
+    for card in Card::iter() {
+        if card.age() == age {
+            for players_needed in card.players_needed() {
+                if player_count >= players_needed {
+                    if card.colour() == Colour::Purple {
+                        guilds.push(card);
+                    } else {
+                        deck.push(card);
+                    }
+                }
+            }
+        }
+    }
+
+    // Shuffle the guilds separately and add player_count + 2 random ones to the deck.
+    if age == Age::Third {
+        guilds.shuffle(&mut thread_rng());
+        for _i in 0..(player_count + 2) as usize {
+            deck.push(guilds.pop().unwrap());
+        }
+    }
+
+    // Shuffle the complete deck and return it.
+    deck.shuffle(&mut thread_rng());
+    return deck;
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_deck_has_right_number_of_cards() {
+        assert_eq!(21, new_deck(Age::First, 3).len());
+        assert_eq!(28, new_deck(Age::First, 4).len());
+        assert_eq!(35, new_deck(Age::First, 5).len());
+        assert_eq!(42, new_deck(Age::First, 6).len());
+        assert_eq!(49, new_deck(Age::First, 7).len());
+
+        assert_eq!(21, new_deck(Age::Second, 3).len());
+        assert_eq!(28, new_deck(Age::Second, 4).len());
+        assert_eq!(35, new_deck(Age::Second, 5).len());
+        assert_eq!(42, new_deck(Age::Second, 6).len());
+        assert_eq!(49, new_deck(Age::Second, 7).len());
+
+        assert_eq!(21, new_deck(Age::Third, 3).len());
+        assert_eq!(28, new_deck(Age::Third, 4).len());
+        assert_eq!(35, new_deck(Age::Third, 5).len());
+        assert_eq!(42, new_deck(Age::Third, 6).len());
+        assert_eq!(49, new_deck(Age::Third, 7).len());
+    }
+
+    #[test]
+    fn no_second_or_third_age_cards_in_first_age_deck() {
+        assert!(!new_deck(Age::First, 3).contains(&Card::Sawmill));
+        assert!(!new_deck(Age::First, 3).contains(&Card::Pantheon));
     }
 }
