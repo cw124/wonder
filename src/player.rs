@@ -23,9 +23,13 @@ impl Player {
             false
         };
     }
-}
 
-impl Player {
+    pub fn strength(self) -> f32 {
+        return self.built_structures.iter()
+            .map(|structure| structure.strength())
+            .sum();
+    }
+
     pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
         return Player {
             wonder: WonderBoard { wonder_type, wonder_side },
@@ -105,32 +109,53 @@ mod tests {
     use crate::card::Card;
     use crate::player::Player;
     use crate::wonder::{WonderType, WonderSide};
+    use Card::*;
 
     #[test]
-    fn can_play_return_true_when_player_can_afford_card() {
+    fn can_play_returns_true_when_player_can_afford_card() {
         // TODO: @Before etc
         let player = create_player();
         assert_eq!(true, player.can_play(Card::LumberYard));
     }
 
     #[test]
-    fn should_can_play_return_true_after_player_builds_required_resources() {
+    fn can_play_returns_true_after_player_builds_required_resources() {
         let mut player = create_player();
-        player.build_structure(Card::StonePit);
-        assert_eq!(false, player.can_play(Card::Aqueduct));
+        player.build_structure(StonePit);
+        assert_eq!(false, player.can_play(Aqueduct));
         assert_eq!(true, player.build_structure(Card::Quarry));
-        assert_eq!(true, player.can_play(Card::Aqueduct));
+        assert_eq!(true, player.can_play(Aqueduct));
     }
 
     #[test]
-    fn should_can_play_return_false_when_player_cannot_pay() {
+    fn strength_returns_sum_of_card_strengths() {
+        assert_strength_after_playing_cards(0.0, vec![StonePit]);
+        assert_strength_after_playing_cards(5.0, vec![StonePit, Quarry, Aqueduct]);
+        assert_strength_after_playing_cards(
+            6.0,
+            vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary]
+        );
+    }
+
+    fn assert_strength_after_playing_cards(strength: f32, cards: Vec<Card>) {
+        let mut player = create_player();
+        player.coins = 100;
+        for card in cards.iter() {
+            println!("Building card: {:#?}", card);
+            assert_eq!(true, player.build_structure(*card));
+        };
+        assert_eq!(strength, player.strength());
+    }
+
+    #[test]
+    fn can_play_returns_false_when_player_cannot_pay() {
         let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![]);
         player.coins = 0; //TODO introduce a Bank type to allow for double-entry bookkeeping instead of this
         assert_eq!(false, player.can_play(Card::TreeFarm));
     }
 
     #[test]
-    fn should_can_play_return_false_when_both_choice_resources_needed() {
+    fn can_play_returns_false_when_both_choice_resources_needed() {
         // TODO implement
     }
 

@@ -133,7 +133,7 @@ pub enum Card {
     ShipownersGuild,
     ScientistsGuild,
     MagistratesGuild,
-    BuildersGuild
+    BuildersGuild,
 }
 
 #[derive(Debug, PartialEq)]
@@ -151,7 +151,7 @@ pub enum Colour {
     Yellow,
     Red,
     Green,
-    Purple
+    Purple,
 }
 
 #[allow(dead_code)]
@@ -595,7 +595,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Brown, true, true, 1, 0)
+                power: Power::per_card_reward(Colour::Brown, true, true, 1, 0),
             },
 
             Card::Bazar => CardInfo {
@@ -605,7 +605,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Grey, true, true, 2, 0)
+                power: Power::per_card_reward(Colour::Grey, true, true, 2, 0),
             },
 
             Card::Dispensary => CardInfo {
@@ -745,7 +745,7 @@ impl Card {
                 cost: Resources { loom: 1, ore: 1, wood: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Brown, true, false, 1, 1)
+                power: Power::per_card_reward(Colour::Brown, true, false, 1, 1),
             },
 
             Card::Lighthouse => CardInfo {
@@ -755,7 +755,7 @@ impl Card {
                 cost: Resources { glass: 1, stone: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Yellow, true, false, 1, 1)
+                power: Power::per_card_reward(Colour::Yellow, true, false, 1, 1),
             },
 
             Card::ChamberOfCommerce => CardInfo {
@@ -783,8 +783,8 @@ impl Card {
                     me: true,
                     neighbours: false,
                     coins_per_thing: 3,
-                    points_per_thing: 1
-                }])
+                    points_per_thing: 1,
+                }]),
             },
 
             Card::Lodge => CardInfo {
@@ -884,7 +884,7 @@ impl Card {
                 cost: Resources { ore: 2, clay: 1, stone: 1, wood: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Brown, false, true, 0, 1)
+                power: Power::per_card_reward(Colour::Brown, false, true, 0, 1),
             },
 
             Card::CraftsmensGuild => CardInfo {
@@ -894,7 +894,7 @@ impl Card {
                 cost: Resources { ore: 2, stone: 2, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Grey, false, true, 0, 2)
+                power: Power::per_card_reward(Colour::Grey, false, true, 0, 2),
             },
 
             Card::TradersGuild => CardInfo {
@@ -904,7 +904,7 @@ impl Card {
                 cost: Resources { loom: 1, papyrus: 1, glass: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Yellow, false, true, 0, 1)
+                power: Power::per_card_reward(Colour::Yellow, false, true, 0, 1),
             },
 
             Card::PhilosophersGuild => CardInfo {
@@ -914,7 +914,7 @@ impl Card {
                 cost: Resources { clay: 3, loom: 1, papyrus: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Green, false, true, 0, 1)
+                power: Power::per_card_reward(Colour::Green, false, true, 0, 1),
             },
 
             Card::SpiesGuild => CardInfo {
@@ -924,7 +924,7 @@ impl Card {
                 cost: Resources { clay: 3, glass: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Red, false, true, 0, 2)
+                power: Power::per_card_reward(Colour::Red, false, true, 0, 2),
             },
 
             Card::StrategistsGuild => CardInfo {
@@ -942,8 +942,8 @@ impl Card {
                     me: false,
                     neighbours: true,
                     coins_per_thing: 0,
-                    points_per_thing: 1
-                }])
+                    points_per_thing: 1,
+                }]),
             },
 
             Card::ShipownersGuild => CardInfo {
@@ -964,8 +964,8 @@ impl Card {
                     me: true,
                     neighbours: false,
                     coins_per_thing: 0,
-                    points_per_thing: 1
-                }])
+                    points_per_thing: 1,
+                }]),
             },
 
             Card::ScientistsGuild => CardInfo {
@@ -985,7 +985,7 @@ impl Card {
                 cost: Resources { wood: 3, stone: 1, loom: 1, ..Default::default() },
                 chains_to: vec![],
                 colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Blue, false, true, 0, 1)
+                power: Power::per_card_reward(Colour::Blue, false, true, 0, 1),
             },
 
             Card::BuildersGuild => CardInfo {
@@ -1003,8 +1003,8 @@ impl Card {
                     me: true,
                     neighbours: true,
                     coins_per_thing: 0,
-                    points_per_thing: 1
-                }])
+                    points_per_thing: 1,
+                }]),
             },
         }
     }
@@ -1031,6 +1031,20 @@ impl Card {
 
     pub fn power(&self) -> Power {
         self.info().power
+    }
+
+    pub fn strength(&self) -> f32 {
+        let x = match self.power() {
+            // TODO: can we write these four options more succinctly?
+            Power::VictoryPoints(points) => points as f32,
+            Power::Science(_) => 1.0,
+            _ => 0.0
+        };
+        return x
+    }
+
+    fn coins_to_victory_points(coins: f32) -> f32 {
+        coins / 3.0
     }
 }
 
