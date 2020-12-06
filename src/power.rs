@@ -49,10 +49,8 @@ impl Power {
                 points_per_thing: u32) -> Power {
 
         Power::PerGameItemRewards(vec![PerGameItemReward {
-            game_item: Box::new(move |game_item| match game_item {
-                CountableGameItem::CountableCard(card) if card.colour() == colour => true,
-                _ => false
-            }),
+            game_item: Box::new(move |game_item| matches!(game_item,
+                    CountableGameItem::CountableCard(card) if card.colour() == colour)),
             me,
             neighbours,
             coins_per_thing,

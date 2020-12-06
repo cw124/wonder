@@ -1023,13 +1023,12 @@ impl Card {
     }
 
     pub fn strength(&self) -> f32 {
-        let x = match self.power() {
+        match self.power() {
             // TODO: can we write these four options more succinctly?
             Power::VictoryPoints(points) => points as f32,
             Power::Science(_) => 1.0,
             _ => 0.0
-        };
-        return x
+        }
     }
 
     fn coins_to_victory_points(coins: f32) -> f32 {
@@ -1068,7 +1067,7 @@ pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {
 
     // Shuffle the complete deck and return it.
     deck.shuffle(&mut thread_rng());
-    return deck;
+    deck
 }
 
 

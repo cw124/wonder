@@ -18,39 +18,39 @@ pub struct Resources {
 
 impl Resources {
     pub fn free() -> Resources {
-        return Resources { ..Default::default() }
+        Resources { ..Default::default() }
     }
 
     pub fn coins(num: u32) -> Resources {
-        return Resources { coins: num, ..Default::default() }
+        Resources { coins: num, ..Default::default() }
     }
 
     pub fn wood(num: u32) -> Resources {
-        return Resources { wood: num, ..Default::default() }
+        Resources { wood: num, ..Default::default() }
     }
 
     pub fn stone(num: u32) -> Resources {
-        return Resources { stone: num, ..Default::default() }
+        Resources { stone: num, ..Default::default() }
     }
 
     pub fn ore(num: u32) -> Resources {
-        return Resources { ore: num, ..Default::default() }
+        Resources { ore: num, ..Default::default() }
     }
 
     pub fn clay(num: u32) -> Resources {
-        return Resources { clay: num, ..Default::default() }
+        Resources { clay: num, ..Default::default() }
     }
 
     pub fn glass(num: u32) -> Resources {
-        return Resources { glass: num, ..Default::default() }
+        Resources { glass: num, ..Default::default() }
     }
 
     pub fn loom(num: u32) -> Resources {
-        return Resources { loom: num, ..Default::default() }
+        Resources { loom: num, ..Default::default() }
     }
 
     pub fn papyrus(num: u32) -> Resources {
-        return Resources { papyrus: num, ..Default::default() }
+        Resources { papyrus: num, ..Default::default() }
     }
 
     /// If this Resources object represents the resources at a user's disposal, then returns `true`
