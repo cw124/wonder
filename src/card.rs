@@ -776,10 +776,7 @@ impl Card {
                 chains_to: vec![],
                 colour: Colour::Yellow,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| match game_item {
-                        CountableGameItem::CompletedWonderStage => true,
-                        _ => false
-                    }),
+                    game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::CompletedWonderStage)),
                     me: true,
                     neighbours: false,
                     coins_per_thing: 3,
@@ -935,10 +932,7 @@ impl Card {
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| match game_item {
-                        CountableGameItem::DefeatToken => true,
-                        _ => false
-                    }),
+                    game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::DefeatToken)),
                     me: false,
                     neighbours: true,
                     coins_per_thing: 0,
@@ -954,13 +948,11 @@ impl Card {
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| match game_item {
+                    game_item: Box::new(|game_item| matches!(game_item,
                         CountableGameItem::CountableCard(card) if
-                        card.info().colour == Colour::Brown ||
+                            card.info().colour == Colour::Brown ||
                             card.info().colour == Colour::Grey ||
-                            card.info().colour == Colour::Purple => true,
-                        _ => false
-                    }),
+                            card.info().colour == Colour::Purple)),
                     me: true,
                     neighbours: false,
                     coins_per_thing: 0,
@@ -996,10 +988,7 @@ impl Card {
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| match game_item {
-                        CountableGameItem::CompletedWonderStage => true,
-                        _ => false
-                    }),
+                    game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::CompletedWonderStage)),
                     me: true,
                     neighbours: true,
                     coins_per_thing: 0,
