@@ -16,12 +16,12 @@ pub struct Player {
 #[allow(dead_code)]
 impl Player {
     pub(crate) fn build_structure(&mut self, structure: Card) -> bool {
-        return if self.can_play(structure) {
+        if self.can_play(structure) {
             self.built_structures.push(structure);
             true
         } else {
             false
-        };
+        }
     }
 
     pub fn strength(self) -> f32 {
@@ -31,13 +31,13 @@ impl Player {
     }
 
     pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
-        return Player {
+        Player {
             wonder: WonderBoard { wonder_type, wonder_side },
             built_structures: vec![],
             built_wonder_stages: vec![],
             coins: 3,
             hand
-        };
+        }
     }
 
     /// Returns `true` if the user can afford to play the given card, given the resources the player
@@ -79,7 +79,7 @@ impl Player {
             return true;
         }
 
-        if choices.len() > 0 {
+        if !choices.is_empty() {
             // Iterate through all possible combinations of the choices we have. Use the iteration
             // index to work out which choice to make for each card.
 
@@ -100,7 +100,7 @@ impl Player {
             }
         }
 
-        return false;
+        false
     }
 }
 
