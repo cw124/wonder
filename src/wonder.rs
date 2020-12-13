@@ -28,7 +28,7 @@ pub struct WonderBoard {
 
 #[allow(dead_code)]
 impl WonderType {
-    fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         match self {
             WonderType::ColossusOfRhodes => "The Colossus of Rhodes",
             WonderType::LighthouseOfAlexandria => "The Lighthouse of Alexandria",

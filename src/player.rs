@@ -6,11 +6,11 @@ use crate::wonder::{WonderBoard, WonderType, WonderSide};
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct Player {
-    wonder: WonderBoard,
+    pub wonder: WonderBoard,
     built_structures: Vec<Card>,
     built_wonder_stages: Vec<Option<Card>>, // TODO: how to represent this?
-    coins: u32,
-    hand: Vec<Card>,
+    pub coins: u32,
+    pub hand: Vec<Card>,
 }
 
 #[allow(dead_code)]

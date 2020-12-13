@@ -35,6 +35,35 @@ impl Game {
         }
     }
 
+    /// Prints out the current game state for the given user index.
+    pub fn print_state_for_user(&self, player: u32) {
+        let player = &self.players[player as usize];
+        println!("Wonder: {} (side {:?})", player.wonder.wonder_type.name(), player.wonder.wonder_side);
+        // TODO: show wonder stages and which have been built
+
+        println!("Coins: {}", player.coins);
+
+        // Get the hand data up front so we can work out how wide each column needs to be.
+        let hand_data: Vec<[String; 3]> = player.hand.iter()
+            .map(|card| [format!("{}", card), format!("{}", card.cost()), format!("{}", card.power())])
+            .collect();
+        let widths: Vec<usize> = (0..2)
+            .map(|i| hand_data.iter().map(|d| d[i].len()).max().unwrap_or(0) + 4)
+            .collect();
+
+        println!("Hand:");
+        println!("  {:name_width$} {:cost_width$} Power", "Card", "Cost", name_width=widths[0], cost_width=widths[1]);
+        println!("  {:name_width$} {:cost_width$} =====", "====", "====", name_width=widths[0], cost_width=widths[1]);
+        for data in hand_data {
+            println!("  {:name_width$} {:cost_width$} {}",
+                     data[0], data[1], data[2], name_width=widths[0], cost_width=widths[1])
+        }
+        // TODO: show chained cards in cost column
+
+        // TODO: show played cards
+        // TODO: show everyone else's wonders, coins, and played cards
+    }
+
     pub fn get_player_count(&self) -> usize {
         self.players.len()
     }

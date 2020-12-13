@@ -1,4 +1,8 @@
-use std::ops::{AddAssign};
+use std::fmt::{Display, Formatter};
+use std::fmt;
+use std::ops::AddAssign;
+
+use crate::utils::plural;
 
 #[derive(Default)]
 #[derive(Debug)]
@@ -81,6 +85,35 @@ impl AddAssign<&Resources> for Resources {
             glass: self.glass + other.glass,
             loom: self.loom + other.loom,
             papyrus: self.papyrus + other.papyrus
+        }
+    }
+}
+
+/// Example formatting: `2 wood, 1 glass, 1 papyrus`
+impl Display for Resources {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        fn add_if_non_zero(count: u32, resource: &str, resources: &mut Vec<String>) {
+            if count > 0 {
+                resources.push(format!("{} {}", count, resource));
+            }
+        }
+
+        let mut resources: Vec<String> = Vec::new();
+        if self.coins > 0 {
+            resources.push(plural(self.coins, "coin"));
+        }
+        add_if_non_zero(self.wood, "wood", &mut resources);
+        add_if_non_zero(self.stone, "stone", &mut resources);
+        add_if_non_zero(self.ore, "ore", &mut resources);
+        add_if_non_zero(self.clay, "clay", &mut resources);
+        add_if_non_zero(self.glass, "glass", &mut resources);
+        add_if_non_zero(self.loom, "loom", &mut resources);
+        add_if_non_zero(self.papyrus, "papyrus", &mut resources);
+
+        if resources.is_empty() {
+            write!(f, "free")
+        } else {
+            write!(f, "{}", resources.join(", "))
         }
     }
 }
