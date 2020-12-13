@@ -6,9 +6,11 @@ mod power;
 mod resources;
 mod player;
 mod game;
+mod utils;
 
 fn main() {
-    println!("{:#?}", Game::new(4));
+    let game = Game::new(4);
+    println!("{:#?}", game);
+    println!();
+    game.print_state_for_user(0);
 }
-
-

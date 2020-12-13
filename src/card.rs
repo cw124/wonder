@@ -1,3 +1,6 @@
+use std::fmt::{Display, Formatter};
+use std::fmt;
+
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
@@ -1035,6 +1038,14 @@ impl Card {
         coins / 3.0
     }
 }
+
+
+impl Display for Card {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.info().name)
+    }
+}
+
 
 /// Creates a new, shuffled deck for the given age and number of players.
 pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {

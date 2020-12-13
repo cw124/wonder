@@ -1,8 +1,14 @@
 //! Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
 //! a scientific structure).
 
+use std::fmt;
+use std::fmt::{Display, Formatter};
+
+use itertools::Itertools;
+
 use crate::card::{Card, Colour};
 use crate::resources::ProducedResources;
+use crate::utils::plural;
 
 /// Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
 /// a scientific structure).
@@ -59,11 +65,40 @@ impl Power {
     }
 }
 
+impl Display for Power {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", match self {
+            Power::PurchasableProducer(ProducedResources::Single(resource)) => format!("{}", resource),
+            Power::PurchasableProducer(ProducedResources::Choice(resources)) => format!("{}", resources.iter().format(" or ")),
+            Power::Producer(ProducedResources::Single(resource)) => format!("{}", resource),
+            Power::Producer(ProducedResources::Choice(resources)) => format!("{}", resources.iter().format(" or ")),
+            Power::VictoryPoints(points) => plural(*points, "VP"),
+            Power::Coins(coins) => plural(*coins, "coin"),
+            Power::BuyBrownAntiClockwise => "Buy brown cards for 1 coin anti-clockwise".to_string(),
+            Power::BuyBrownClockwise => "Buy brown cards for 1 coin clockwise".to_string(),
+            Power::BuyGrey => "Buy grey cards for 1 coin".to_string(),
+            Power::Science(symbol) => format!("{}", symbol.iter().map(|symbol| format!("{} symbol", symbol)).format(" or ")),
+            Power::Shields(shields) => plural(*shields, "shield"),
+            Power::PerGameItemRewards(_) => "Per game item thing (TODO)".to_string()  // TODO
+        })
+    }
+}
+
 /// Represents the three different symbols found on Science (ie. green) cards.
 pub enum ScienceItem {
     Compass,
     Cog,
     Tablet
+}
+
+impl Display for ScienceItem {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", match self {
+            ScienceItem::Compass => "Compass",
+            ScienceItem::Cog => "Cog",
+            ScienceItem::Tablet => "Tablet"
+        })
+    }
 }
 
 /// Provides coins and/or victory points based on the number of game items a player or his neighbours have. For example,
