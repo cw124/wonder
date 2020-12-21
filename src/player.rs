@@ -1,14 +1,19 @@
-use crate::card::Card;
+use std::collections::HashMap;
+
+use crate::card::{Card, Colour};
 use crate::power::Power;
+use crate::power::ScienceItem;
 use crate::resources::{ProducedResources, Resources};
-use crate::wonder::{WonderBoard, WonderType, WonderSide};
+use crate::wonder::{WonderBoard, WonderSide, WonderType};
+use std::collections::hash_map::RandomState;
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct Player {
     pub wonder: WonderBoard,
     built_structures: Vec<Card>,
-    built_wonder_stages: Vec<Option<Card>>, // TODO: how to represent this?
+    built_wonder_stages: Vec<Option<Card>>,
+    // TODO: how to represent this?
     pub coins: u32,
     pub hand: Vec<Card>,
 }
@@ -24,10 +29,63 @@ impl Player {
         }
     }
 
-    pub fn strength(self) -> f32 {
-        return self.built_structures.iter()
-            .map(|structure| structure.strength())
+    fn evaluate_green(&self, colour_cards: &Vec<Card>) -> f32 {
+        let mut science_items_count: HashMap<ScienceItem, i32, RandomState> = HashMap::new();
+
+        science_items_count.insert(ScienceItem::Compass, 0);
+        science_items_count.insert(ScienceItem::Cog, 0);
+        science_items_count.insert(ScienceItem::Tablet, 0);
+
+
+        for card in colour_cards.iter() {
+            match card.power() {
+                Power::Science(science_items) =>
+                    for science_item in science_items.iter() {
+                        let count = science_items_count.entry(*science_item).or_insert(0);
+                        *count += 1;
+                    },
+                _ => {}
+            }
+        }
+
+        let score_for_sets_of_identical_symbols: f32 = science_items_count.iter()
+            .filter(|(_, count)| **count > 0)
+            .map(|(_, count)| {
+                (*count as f32).powf(2f32)
+            })
             .sum();
+
+        let score_for_all_symbol_groups: f32 =  7f32 * 
+            *science_items_count.iter().min_by_key(|(_, count)| *count).unwrap().1 as f32;
+
+        return score_for_all_symbol_groups + score_for_sets_of_identical_symbols;
+    }
+
+    fn evaluate_colour(&self, cards_of_given_colour: &Vec<Card>) -> f32 {
+        let colour = cards_of_given_colour.get(0).unwrap().colour();
+
+        match colour {
+            Colour::Green => self.evaluate_green(cards_of_given_colour),
+            _ => cards_of_given_colour.iter().map(|card| card.immediate_strength()).sum(),
+        }
+    }
+
+    pub fn strength(&self) -> f32 {
+        let mut colour_to_structure = HashMap::new();
+        for structure in self.built_structures.iter() {
+            let colour_structures = colour_to_structure.entry(structure.colour()).or_insert(vec![]);
+            colour_structures.push(*structure)
+        }
+
+        colour_to_structure.iter()
+            .map(|colour_entry|
+                {
+                    let x = self.evaluate_colour(colour_entry.1);
+                    println!("Evaluated color: {:#?}", x);
+                    x
+                }
+            )
+            .sum()
     }
 
     pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
@@ -36,7 +94,7 @@ impl Player {
             built_structures: vec![],
             built_wonder_stages: vec![],
             coins: 3,
-            hand
+            hand,
         }
     }
 
@@ -106,10 +164,11 @@ impl Player {
 
 #[cfg(test)]
 mod tests {
+    use Card::*;
+
     use crate::card::Card;
     use crate::player::Player;
-    use crate::wonder::{WonderType, WonderSide};
-    use Card::*;
+    use crate::wonder::{WonderSide, WonderType};
 
     #[test]
     fn can_play_returns_true_when_player_can_afford_card() {
@@ -133,8 +192,42 @@ mod tests {
         assert_strength_after_playing_cards(5.0, vec![StonePit, Quarry, Aqueduct]);
         assert_strength_after_playing_cards(
             6.0,
-            vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary]
+            vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary],
         );
+    }
+
+    #[test]
+    fn strength_returns_correct_strength_of_green_structures() {
+        assert_strength_after_playing_cards(
+            1.0,
+            add_prerequisites(vec![Lodge]),
+        );
+
+        assert_strength_after_playing_cards(
+            4.0,
+            add_prerequisites(vec![Lodge, Apothecary]),
+        );
+
+        assert_strength_after_playing_cards(
+            9.0,
+            add_prerequisites(vec![Lodge, Apothecary, Dispensary]),
+        );
+
+        assert_strength_after_playing_cards(
+            10.0,
+            add_prerequisites(vec![Lodge, Workshop, Library]),
+        );
+
+        assert_strength_after_playing_cards(  // rulebook example
+            21.0,
+            add_prerequisites(vec![Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library]),
+        );
+    }
+
+    fn add_prerequisites(structures: Vec<Card>) -> Vec<Card> {
+        // clay: 2, loom: 1, papyrus: 1
+        let prerequisites = vec![Quarry, Sawmill, Foundry, Brickyard, Press1, Glassworks1, Loom1];
+        prerequisites.iter().copied().chain(structures.iter().copied()).collect()
     }
 
     fn assert_strength_after_playing_cards(strength: f32, cards: Vec<Card>) {

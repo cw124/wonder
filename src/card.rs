@@ -6,6 +6,7 @@ use rand::thread_rng;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+
 use crate::power::{CountableGameItem, ScienceItem};
 use crate::power::PerGameItemReward;
 use crate::power::Power;
@@ -143,10 +144,10 @@ pub enum Card {
 pub enum Age {
     First,
     Second,
-    Third
+    Third,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq, Hash)]
 pub enum Colour {
     Brown,
     Grey,
@@ -1025,17 +1026,12 @@ impl Card {
         self.info().power
     }
 
-    pub fn strength(&self) -> f32 {
+    // returns the immediate strength
+    pub fn immediate_strength(&self) -> f32 {
         match self.power() {
-            // TODO: can we write these four options more succinctly?
             Power::VictoryPoints(points) => points as f32,
-            Power::Science(_) => 1.0,
             _ => 0.0
         }
-    }
-
-    fn coins_to_victory_points(coins: f32) -> f32 {
-        coins / 3.0
     }
 }
 

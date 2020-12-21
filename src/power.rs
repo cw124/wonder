@@ -1,13 +1,14 @@
 //! Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
 //! a scientific structure).
 
+use crate::card::{Card, Colour};
+use crate::resources::ProducedResources;
+use strum_macros::EnumIter;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use itertools::Itertools;
 
-use crate::card::{Card, Colour};
-use crate::resources::ProducedResources;
 use crate::utils::plural;
 
 /// Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
@@ -85,6 +86,7 @@ impl Display for Power {
 }
 
 /// Represents the three different symbols found on Science (ie. green) cards.
+#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, EnumIter)]
 pub enum ScienceItem {
     Compass,
     Cog,
