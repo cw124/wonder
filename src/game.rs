@@ -41,19 +41,27 @@ impl Game {
     pub fn print_state_for_user(&self, player: u32) {
         let player = &self.players[player as usize];
 
-        let mut table = Table::new(vec![String::from("Card"), String::from("Cost"), String::from("Power")]);
+        let mut hand = Table::new(vec![String::from("Card"), String::from("Cost"), String::from("Power")]);
         player.hand.iter()
             .map(|card| vec![card.to_string(), card.cost().to_string(), card.power().to_string()])
-            .for_each(|row| table.add(row));
+            .for_each(|row| hand.add(row));
+
+        let mut played = Table::new(vec![String::from("Card"), String::from("Power")]);
+        player.built_structures.iter()
+            .map(|card| vec![card.to_string(), card.power().to_string()])
+            .for_each(|row| played.add(row));
 
         println!("Wonder: {} (side {:?})", player.wonder.wonder_type.name(), player.wonder.wonder_side);
         println!("Coins: {}", player.coins);
+        println!();
         println!("Hand:");
-        table.print("  ", 4);
+        hand.print("  ", 4);
+        println!();
+        println!("Played:");
+        played.print("  ", 4);
 
         // TODO: show wonder stages and which have been built
         // TODO: show chained cards in cost column
-        // TODO: show played cards
         // TODO: show everyone else's wonders, coins, and played cards
     }
 

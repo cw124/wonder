@@ -11,7 +11,7 @@ use std::collections::hash_map::RandomState;
 #[allow(dead_code)]
 pub struct Player {
     pub wonder: WonderBoard,
-    built_structures: Vec<Card>,
+    pub built_structures: Vec<Card>,
     built_wonder_stages: Vec<Option<Card>>,
     // TODO: how to represent this?
     pub coins: u32,
