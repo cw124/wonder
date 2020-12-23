@@ -7,6 +7,7 @@ mod resources;
 mod player;
 mod game;
 mod utils;
+mod table;
 
 fn main() {
     let game = Game::new(4);
