@@ -1,3 +1,8 @@
+//! Represents the whole game state.
+
+use std::io;
+use std::io::Write;
+
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
@@ -5,7 +10,7 @@ use strum::IntoEnumIterator;
 use table::Table;
 
 use crate::{card, table};
-use crate::card::Age;
+use crate::card::{Age, Card};
 use crate::player::Player;
 use crate::wonder::{WonderSide, WonderType};
 
@@ -41,9 +46,9 @@ impl Game {
     pub fn print_state_for_user(&self, player: u32) {
         let player = &self.players[player as usize];
 
-        let mut hand = Table::new(vec![String::from("Card"), String::from("Cost"), String::from("Power")]);
-        player.hand.iter()
-            .map(|card| vec![card.to_string(), card.cost().to_string(), card.power().to_string()])
+        let mut hand = Table::new(vec![String::from("Num"), String::from("Card"), String::from("Cost"), String::from("Power")]);
+        player.hand.iter().enumerate()
+            .map(|(i, card)| vec![(i+1).to_string(), card.to_string(), card.cost().to_string(), card.power().to_string()])
             .for_each(|row| hand.add(row));
 
         let mut played = Table::new(vec![String::from("Card"), String::from("Power")]);
@@ -65,9 +70,50 @@ impl Game {
         // TODO: show everyone else's wonders, coins, and played cards
     }
 
+    /// Displays the current state of the game to the user (using [`Game::print_state_for_user`]) and then interactively
+    /// asks the user for their move.
+    pub fn ask_for_move(&self, player: u32) -> Move {
+        // TODO: currently this just asks for a card choice, and assumes the card will be "built" (rather than used for
+        //  a wonder stage or discarded for coins).
+        // TODO: Support borrowing resources from neighbours.
+        // TODO: Check the move is actually valid!
+
+        self.print_state_for_user(player);
+
+        let player = &self.players[player as usize];
+
+        println!();
+        print!("Please enter the id of the card to play: ");
+        let card: Card = loop {
+            io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
+            let mut id = String::new();
+            io::stdin().read_line(&mut id).unwrap();
+            let id: usize = match id.trim().parse() {
+                Ok(id) => id,
+                Err(_) => 0
+            };
+            if id > 0 && id <= player.hand.len() {
+                break player.hand[id - 1];
+            }
+            print!("Please enter a number between 1 and {} inclusive: ", player.hand.len());
+        };
+
+        Move::Build(card)
+    }
+
     pub fn get_player_count(&self) -> usize {
         self.players.len()
     }
+}
+
+/// Represents a move.
+/// TODO: this needs to one day record coins paid for borrowed resources.
+#[allow(dead_code)]
+#[derive(Debug)]
+pub enum Move {
+    Build(Card),
+    Wonder(Card),
+    Discard
 }
 
 #[cfg(test)]

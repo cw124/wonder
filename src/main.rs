@@ -11,7 +11,6 @@ mod table;
 
 fn main() {
     let game = Game::new(4);
-    println!("{:#?}", game);
-    println!();
-    game.print_state_for_user(0);
+    let player_move = game.ask_for_move(0);
+    println!("You chose to {:?}", player_move);
 }
