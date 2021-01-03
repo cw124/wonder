@@ -29,7 +29,7 @@ impl Player {
         }
     }
 
-    fn evaluate_green(&self, colour_cards: &Vec<Card>) -> f32 {
+    fn evaluate_green(&self, colour_cards: &[Card]) -> f32 {
         let mut science_items_count: HashMap<ScienceItem, i32, RandomState> = HashMap::new();
 
         science_items_count.insert(ScienceItem::Compass, 0);
@@ -38,13 +38,11 @@ impl Player {
 
 
         for card in colour_cards.iter() {
-            match card.power() {
-                Power::Science(science_items) =>
-                    for science_item in science_items.iter() {
-                        let count = science_items_count.entry(*science_item).or_insert(0);
-                        *count += 1;
-                    },
-                _ => {}
+            if let Power::Science(science_items) = card.power() {
+                for science_item in science_items.iter() {
+                    let count = science_items_count.entry(*science_item).or_insert(0);
+                    *count += 1;
+                }
             }
         }
 
@@ -58,10 +56,10 @@ impl Player {
         let score_for_all_symbol_groups: f32 =  7f32 * 
             *science_items_count.iter().min_by_key(|(_, count)| *count).unwrap().1 as f32;
 
-        return score_for_all_symbol_groups + score_for_sets_of_identical_symbols;
+        score_for_all_symbol_groups + score_for_sets_of_identical_symbols
     }
 
-    fn evaluate_colour(&self, cards_of_given_colour: &Vec<Card>) -> f32 {
+    fn evaluate_colour(&self, cards_of_given_colour: &[Card]) -> f32 {
         let colour = cards_of_given_colour.get(0).unwrap().colour();
 
         match colour {
