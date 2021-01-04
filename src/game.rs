@@ -71,12 +71,12 @@ impl Game {
     }
 
     /// Displays the current state of the game to the user (using [`Game::print_state_for_user`]) and then interactively
-    /// asks the user for their move.
-    pub fn ask_for_move(&self, player: u32) -> Move {
+    /// asks the user for their action.
+    pub fn ask_for_action(&self, player: u32) -> Action {
         // TODO: currently this just asks for a card choice, and assumes the card will be "built" (rather than used for
         //  a wonder stage or discarded for coins).
         // TODO: Support borrowing resources from neighbours.
-        // TODO: Check the move is actually valid!
+        // TODO: Check the action is actually valid!
 
         self.print_state_for_user(player);
 
@@ -98,7 +98,7 @@ impl Game {
             print!("Please enter a number between 1 and {} inclusive: ", player.hand.len());
         };
 
-        Move::Build(card)
+        Action::Build(card)
     }
 
     pub fn get_player_count(&self) -> usize {
@@ -106,11 +106,11 @@ impl Game {
     }
 }
 
-/// Represents a move.
+/// Represents an action.
 /// TODO: this needs to one day record coins paid for borrowed resources.
 #[allow(dead_code)]
 #[derive(Debug)]
-pub enum Move {
+pub enum Action {
     Build(Card),
     Wonder(Card),
     Discard
