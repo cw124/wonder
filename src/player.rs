@@ -5,7 +5,6 @@ use crate::power::Power;
 use crate::power::ScienceItem;
 use crate::resources::{ProducedResources, Resources};
 use crate::wonder::{WonderBoard, WonderSide, WonderType};
-use std::collections::hash_map::RandomState;
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -29,8 +28,8 @@ impl Player {
         }
     }
 
-    fn evaluate_green(&self, colour_cards: &[Card]) -> f32 {
-        let mut science_items_count: HashMap<ScienceItem, i32, RandomState> = HashMap::new();
+    fn evaluate_green(colour_cards: &[Card]) -> f32 {
+        let mut science_items_count: HashMap<ScienceItem, i32> = HashMap::new();
 
         science_items_count.insert(ScienceItem::Compass, 0);
         science_items_count.insert(ScienceItem::Cog, 0);
@@ -59,31 +58,31 @@ impl Player {
         score_for_all_symbol_groups + score_for_sets_of_identical_symbols
     }
 
-    fn evaluate_colour(&self, cards_of_given_colour: &[Card]) -> f32 {
+    fn evaluate_colour(cards_of_given_colour: &[Card]) -> f32 {
         let colour = cards_of_given_colour.get(0).unwrap().colour();
 
         match colour {
-            Colour::Green => self.evaluate_green(cards_of_given_colour),
+            Colour::Green => Self::evaluate_green(cards_of_given_colour),
             _ => cards_of_given_colour.iter().map(|card| card.immediate_strength()).sum(),
         }
     }
 
-    pub fn strength(&self) -> f32 {
+    fn strength_internal(cards: &[Card]) -> f32 {
         let mut colour_to_structure = HashMap::new();
-        for structure in self.built_structures.iter() {
+        for structure in cards.iter() {
             let colour_structures = colour_to_structure.entry(structure.colour()).or_insert(vec![]);
             colour_structures.push(*structure)
         }
 
         colour_to_structure.iter()
-            .map(|colour_entry|
-                {
-                    let x = self.evaluate_colour(colour_entry.1);
-                    println!("Evaluated color: {:#?}", x);
-                    x
-                }
-            )
+            .map(|colour_entry| Self::evaluate_colour(colour_entry.1))
             .sum()
+    }
+
+    /// Returns this player's "strength" -- a number where a higher value means the player is doing better than a lower
+    /// value.
+    pub fn strength(&self) -> f32 {
+        Self::strength_internal(&self.built_structures)
     }
 
     pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
@@ -164,93 +163,49 @@ impl Player {
 mod tests {
     use Card::*;
 
-    use crate::card::Card;
-    use crate::player::Player;
-    use crate::wonder::{WonderSide, WonderType};
+    use super::*;
 
     #[test]
     fn can_play_returns_true_when_player_can_afford_card() {
         // TODO: @Before etc
-        let player = create_player();
-        assert_eq!(true, player.can_play(Card::LumberYard));
+        let player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
+        assert_eq!(true, player.can_play(LumberYard));
     }
 
     #[test]
     fn can_play_returns_true_after_player_builds_required_resources() {
-        let mut player = create_player();
+        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![StonePit, Quarry, Aqueduct]);
         player.build_structure(StonePit);
         assert_eq!(false, player.can_play(Aqueduct));
-        assert_eq!(true, player.build_structure(Card::Quarry));
+        assert_eq!(true, player.build_structure(Quarry));
         assert_eq!(true, player.can_play(Aqueduct));
     }
 
     #[test]
     fn strength_returns_sum_of_card_strengths() {
-        assert_strength_after_playing_cards(0.0, vec![StonePit]);
-        assert_strength_after_playing_cards(5.0, vec![StonePit, Quarry, Aqueduct]);
-        assert_strength_after_playing_cards(
-            6.0,
-            vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary],
-        );
+        assert_eq!(0.0, Player::strength_internal(&vec![StonePit]));
+        assert_eq!(5.0, Player::strength_internal(&vec![StonePit, Quarry, Aqueduct]));
+        assert_eq!(6.0, Player::strength_internal(&vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary]));
     }
 
     #[test]
     fn strength_returns_correct_strength_of_green_structures() {
-        assert_strength_after_playing_cards(
-            1.0,
-            add_prerequisites(vec![Lodge]),
-        );
-
-        assert_strength_after_playing_cards(
-            4.0,
-            add_prerequisites(vec![Lodge, Apothecary]),
-        );
-
-        assert_strength_after_playing_cards(
-            9.0,
-            add_prerequisites(vec![Lodge, Apothecary, Dispensary]),
-        );
-
-        assert_strength_after_playing_cards(
-            10.0,
-            add_prerequisites(vec![Lodge, Workshop, Library]),
-        );
-
-        assert_strength_after_playing_cards(  // rulebook example
-            21.0,
-            add_prerequisites(vec![Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library]),
-        );
-    }
-
-    fn add_prerequisites(structures: Vec<Card>) -> Vec<Card> {
-        // clay: 2, loom: 1, papyrus: 1
-        let prerequisites = vec![Quarry, Sawmill, Foundry, Brickyard, Press1, Glassworks1, Loom1];
-        prerequisites.iter().copied().chain(structures.iter().copied()).collect()
-    }
-
-    fn assert_strength_after_playing_cards(strength: f32, cards: Vec<Card>) {
-        let mut player = create_player();
-        player.coins = 100;
-        for card in cards.iter() {
-            println!("Building card: {:#?}", card);
-            assert_eq!(true, player.build_structure(*card));
-        };
-        assert_eq!(strength, player.strength());
+        assert_eq!(1.0, Player::strength_internal(&vec![Lodge]));
+        assert_eq!(4.0, Player::strength_internal(&vec![Lodge, Apothecary]));
+        assert_eq!(9.0, Player::strength_internal(&vec![Lodge, Apothecary, Dispensary]));
+        assert_eq!(10.0, Player::strength_internal(&vec![Lodge, Workshop, Library]));
+        assert_eq!(21.0, Player::strength_internal(&vec![Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library]));  // rulebook example
     }
 
     #[test]
     fn can_play_returns_false_when_player_cannot_pay() {
         let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![]);
         player.coins = 0; //TODO introduce a Bank type to allow for double-entry bookkeeping instead of this
-        assert_eq!(false, player.can_play(Card::TreeFarm));
+        assert_eq!(false, player.can_play(TreeFarm));
     }
 
     #[test]
     fn can_play_returns_false_when_both_choice_resources_needed() {
         // TODO implement
-    }
-
-    fn create_player() -> Player {
-        Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![])
     }
 }
