@@ -10,7 +10,11 @@ mod utils;
 mod table;
 
 fn main() {
-    let game = Game::new(4);
-    let player_move = game.ask_for_action(0);
-    println!("You chose to {:?}", player_move);
+    let mut game = Game::new(7);
+    loop {
+        println!();
+        let action = game.ask_for_action(0);
+        println!("Selected action: {}", action.to_string());
+        game.do_action(0, &action);
+    }
 }

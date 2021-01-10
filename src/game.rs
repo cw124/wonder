@@ -1,5 +1,7 @@
 //! Represents the whole game state.
 
+use core::fmt;
+use std::fmt::{Display, Formatter};
 use std::io;
 use std::io::Write;
 
@@ -56,7 +58,10 @@ impl Game {
             .map(|card| vec![card.to_string(), card.power().to_string()])
             .for_each(|row| played.add(row));
 
-        println!("Wonder: {} (side {:?})", player.wonder.wonder_type.name(), player.wonder.wonder_side);
+        println!("Wonder: {} (side {:?}). Starting resource: {}",
+                 player.wonder.wonder_type.name(),
+                 player.wonder.wonder_side,
+                 player.wonder.starting_resource());
         println!("Coins: {}", player.coins);
         println!();
         println!("Hand:");
@@ -92,13 +97,26 @@ impl Game {
                 Ok(id) => id,
                 Err(_) => 0
             };
-            if id > 0 && id <= player.hand.len() {
-                break player.hand[id - 1];
+            if id < 1 || id > player.hand.len() {
+                print!("Please enter a number between 1 and {} inclusive: ", player.hand.len());
+            } else {
+                let card = player.hand[id - 1];
+                if !player.can_play(&Action::Build(card)) {
+                    print!("You can't play that card. Please try again: ");
+                } else {
+                    break card;
+                }
             }
-            print!("Please enter a number between 1 and {} inclusive: ", player.hand.len());
         };
 
         Action::Build(card)
+    }
+
+    /// Executes the given action on the given player, updating the game state to reflect the outcome of that action.
+    /// Returns `true` if the action is legal, `false` otherwise (in which case this function otherwise does nothing).
+    pub fn do_action(&mut self, player: u32, action: &Action) -> bool {
+        let player = &mut self.players[player as usize];
+        player.do_action(action)
     }
 
     pub fn get_player_count(&self) -> usize {
@@ -114,6 +132,16 @@ pub enum Action {
     Build(Card),
     Wonder(Card),
     Discard
+}
+
+impl Display for Action {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Action::Build(card) => write!(f, "Build {}", card.to_string()),
+            Action::Wonder(card) => write!(f, "Use {} to build a wonder stage", card.to_string()),
+            Action::Discard => write!(f, "Discard"),
+        }
+    }
 }
 
 #[cfg(test)]
