@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::card::{Card, Colour};
+use crate::game::Action;
 use crate::power::Power;
 use crate::power::ScienceItem;
 use crate::resources::{ProducedResources, Resources};
@@ -19,9 +20,21 @@ pub struct Player {
 
 #[allow(dead_code)]
 impl Player {
-    pub(crate) fn build_structure(&mut self, structure: Card) -> bool {
-        if self.can_play(structure) {
-            self.built_structures.push(structure);
+    /// Performs the given [`Action`] on the current player, for example moving a card from the player's hand into the
+    /// player's built structures. Returns `true` if the action is legal, `false` otherwise (in which case this function
+    /// otherwise does nothing).
+    pub fn do_action(&mut self, action: &Action) -> bool {
+        if self.can_play(action) {
+            match action {
+                Action::Build(card) => {
+                    let index = self.hand.iter().position(|c| c == card).unwrap();
+                    let card_from_hand = self.hand.swap_remove(index);
+                    self.built_structures.push(card_from_hand);
+                    // TODO: decrement money, deal with borrowed resources
+                }
+                Action::Wonder(_) => todo!(),
+                Action::Discard => todo!(),
+            }
             true
         } else {
             false
@@ -95,11 +108,23 @@ impl Player {
         }
     }
 
+    pub fn can_play(&self, action: &Action) -> bool {
+        match action {
+            Action::Build(card) => self.can_play_card(card),
+            Action::Wonder(_) => todo!(),
+            Action::Discard => todo!(),
+        }
+    }
+
     /// Returns `true` if the user can afford to play the given card, given the resources the player
     /// has access to.
     ///
     /// TODO: doesn't currently deal with borrowing resources from neighbours.
-    pub fn can_play(&self, card: Card) -> bool {
+    fn can_play_card(&self, card: &Card) -> bool {
+        if !self.hand.iter().any(|c| c == card) {
+            return false;
+        }
+
         // Initialise a Resources struct with the number of coins we have.
         let mut available_resources = Resources::coins(self.coins);
 
@@ -169,16 +194,16 @@ mod tests {
     fn can_play_returns_true_when_player_can_afford_card() {
         // TODO: @Before etc
         let player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
-        assert_eq!(true, player.can_play(LumberYard));
+        assert_eq!(true, player.can_play(&Action::Build(LumberYard)));
     }
 
     #[test]
     fn can_play_returns_true_after_player_builds_required_resources() {
         let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![StonePit, Quarry, Aqueduct]);
-        player.build_structure(StonePit);
-        assert_eq!(false, player.can_play(Aqueduct));
-        assert_eq!(true, player.build_structure(Quarry));
-        assert_eq!(true, player.can_play(Aqueduct));
+        player.do_action(&Action::Build(StonePit));
+        assert_eq!(false, player.can_play(&Action::Build(Aqueduct)));
+        assert_eq!(true, player.do_action(&Action::Build(Quarry)));
+        assert_eq!(true, player.can_play(&Action::Build(Aqueduct)));
     }
 
     #[test]
@@ -201,11 +226,27 @@ mod tests {
     fn can_play_returns_false_when_player_cannot_pay() {
         let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![]);
         player.coins = 0; //TODO introduce a Bank type to allow for double-entry bookkeeping instead of this
-        assert_eq!(false, player.can_play(TreeFarm));
+        assert_eq!(false, player.can_play(&Action::Build(TreeFarm)));
     }
 
     #[test]
     fn can_play_returns_false_when_both_choice_resources_needed() {
         // TODO implement
+    }
+
+    #[test]
+    fn do_action_returns_false_if_action_not_playable() {
+        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
+        assert_eq!(false, player.do_action(&Action::Build(StonePit)));
+    }
+
+    #[test]
+    fn do_action_transfers_built_card_from_hand_to_built_structures() {
+        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
+        assert_eq!(0, player.built_structures.len());
+        assert_eq!(1, player.hand.len());
+        assert_eq!(true, player.do_action(&Action::Build(LumberYard)));
+        assert_eq!(1, player.built_structures.len());
+        assert_eq!(0, player.hand.len());
     }
 }
