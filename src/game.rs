@@ -2,16 +2,12 @@
 
 use core::fmt;
 use std::fmt::{Display, Formatter};
-use std::io;
-use std::io::Write;
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
 
-use table::Table;
-
-use crate::{card, table};
+use crate::card;
 use crate::card::{Age, Card};
 use crate::player::Player;
 use crate::wonder::{WonderSide, WonderType};
@@ -44,72 +40,14 @@ impl Game {
         }
     }
 
-    /// Prints out the current game state for the given user index.
-    pub fn print_state_for_user(&self, player: u32) {
-        let player = &self.players[player as usize];
-
-        let mut hand = Table::new(vec![String::from("Num"), String::from("Card"), String::from("Cost"), String::from("Power")]);
-        player.hand.iter().enumerate()
-            .map(|(i, card)| vec![(i+1).to_string(), card.to_string(), card.cost().to_string(), card.power().to_string()])
-            .for_each(|row| hand.add(row));
-
-        let mut played = Table::new(vec![String::from("Card"), String::from("Power")]);
-        player.built_structures.iter()
-            .map(|card| vec![card.to_string(), card.power().to_string()])
-            .for_each(|row| played.add(row));
-
-        println!("Wonder: {} (side {:?}). Starting resource: {}",
-                 player.wonder.wonder_type.name(),
-                 player.wonder.wonder_side,
-                 player.wonder.starting_resource());
-        println!("Coins: {}", player.coins);
-        println!();
-        println!("Hand:");
-        hand.print("  ", 4);
-        println!();
-        println!("Played:");
-        played.print("  ", 4);
-
-        // TODO: show wonder stages and which have been built
-        // TODO: show chained cards in cost column
-        // TODO: show everyone else's wonders, coins, and played cards
-    }
-
-    /// Displays the current state of the game to the user (using [`Game::print_state_for_user`]) and then interactively
-    /// asks the user for their action.
-    pub fn ask_for_action(&self, player: u32) -> Action {
-        // TODO: currently this just asks for a card choice, and assumes the card will be "built" (rather than used for
-        //  a wonder stage or discarded for coins).
-        // TODO: Support borrowing resources from neighbours.
-        // TODO: Check the action is actually valid!
-
-        self.print_state_for_user(player);
-
-        let player = &self.players[player as usize];
-
-        println!();
-        print!("Please enter the id of the card to play: ");
-        let card: Card = loop {
-            io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
-            let mut id = String::new();
-            io::stdin().read_line(&mut id).unwrap();
-            let id: usize = match id.trim().parse() {
-                Ok(id) => id,
-                Err(_) => 0
-            };
-            if id < 1 || id > player.hand.len() {
-                print!("Please enter a number between 1 and {} inclusive: ", player.hand.len());
-            } else {
-                let card = player.hand[id - 1];
-                if !player.can_play(&Action::Build(card)) {
-                    print!("You can't play that card. Please try again: ");
-                } else {
-                    break card;
-                }
-            }
-        };
-
-        Action::Build(card)
+    /// Executes a turn of the game. Gets an [`Action`] from each [`Player`] and updates the game state accordingly.
+    pub fn do_turn(&mut self) {
+        let actions: Vec<Action> = self.players.iter().enumerate()
+            .map(|(index, player)| player.algorithm.get_next_action(&player, index as u32))
+            .collect();
+        for (index, action) in actions.iter().enumerate() {
+            self.do_action(index as u32, &action);
+        }
     }
 
     /// Executes the given action on the given player, updating the game state to reflect the outcome of that action.

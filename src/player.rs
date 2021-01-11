@@ -6,10 +6,14 @@ use crate::power::Power;
 use crate::power::ScienceItem;
 use crate::resources::{ProducedResources, Resources};
 use crate::wonder::{WonderBoard, WonderSide, WonderType};
+use std::fmt::Debug;
+use crate::algorithms::PlayingAlgorithm;
+use crate::algorithms::human::Human;
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct Player {
+    pub algorithm: Box<dyn PlayingAlgorithm>,
     pub wonder: WonderBoard,
     pub built_structures: Vec<Card>,
     built_wonder_stages: Vec<Option<Card>>,
@@ -100,6 +104,7 @@ impl Player {
 
     pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
         Player {
+            algorithm: Box::new(Human {}),
             wonder: WonderBoard { wonder_type, wonder_side },
             built_structures: vec![],
             built_wonder_stages: vec![],

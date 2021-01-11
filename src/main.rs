@@ -8,13 +8,12 @@ mod player;
 mod game;
 mod utils;
 mod table;
+mod algorithms;
 
 fn main() {
-    let mut game = Game::new(7);
+    let mut game = Game::new(4);
     loop {
         println!();
-        let action = game.ask_for_action(0);
-        println!("Selected action: {}", action.to_string());
-        game.do_action(0, &action);
+        game.do_turn();
     }
 }
