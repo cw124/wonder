@@ -42,19 +42,16 @@ impl Game {
 
     /// Executes a turn of the game. Gets an [`Action`] from each [`Player`] and updates the game state accordingly.
     pub fn do_turn(&mut self) {
-        let actions: Vec<Action> = self.players.iter().enumerate()
-            .map(|(index, player)| player.algorithm.get_next_action(&player, index as u32))
+        let actions: Vec<(&mut Player, Action)> = self.players.iter_mut().enumerate()
+            .map(|(index, player)| {
+                let action = player.algorithm.get_next_action(&player, index as u32);
+                (player, action)
+            })
             .collect();
-        for (index, action) in actions.iter().enumerate() {
-            self.do_action(index as u32, &action);
-        }
-    }
 
-    /// Executes the given action on the given player, updating the game state to reflect the outcome of that action.
-    /// Returns `true` if the action is legal, `false` otherwise (in which case this function otherwise does nothing).
-    pub fn do_action(&mut self, player: u32, action: &Action) -> bool {
-        let player = &mut self.players[player as usize];
-        player.do_action(action)
+        for (player, action) in actions {
+            player.do_action(&action);
+        }
     }
 
     pub fn get_player_count(&self) -> usize {
