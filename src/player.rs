@@ -8,7 +8,6 @@ use crate::resources::{ProducedResources, Resources};
 use crate::wonder::{WonderBoard, WonderSide, WonderType};
 use std::fmt::Debug;
 use crate::algorithms::PlayingAlgorithm;
-use crate::algorithms::human::Human;
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -102,9 +101,14 @@ impl Player {
         Self::strength_internal(&self.built_structures)
     }
 
-    pub fn new(wonder_type: WonderType, wonder_side: WonderSide, hand: Vec<Card>) -> Player {
+    pub fn new(
+        wonder_type: WonderType,
+        wonder_side: WonderSide,
+        hand: Vec<Card>,
+        algorithm: Box<dyn PlayingAlgorithm>) -> Player {
+
         Player {
-            algorithm: Box::new(Human {}),
+            algorithm,
             wonder: WonderBoard { wonder_type, wonder_side },
             built_structures: vec![],
             built_wonder_stages: vec![],
@@ -194,17 +198,18 @@ mod tests {
     use Card::*;
 
     use super::*;
+    use crate::algorithms::random::Random;
 
     #[test]
     fn can_play_returns_true_when_player_can_afford_card() {
         // TODO: @Before etc
-        let player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
+        let player = new_player(vec![LumberYard]);
         assert_eq!(true, player.can_play(&Action::Build(LumberYard)));
     }
 
     #[test]
     fn can_play_returns_true_after_player_builds_required_resources() {
-        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![StonePit, Quarry, Aqueduct]);
+        let mut player = new_player(vec![StonePit, Quarry, Aqueduct]);
         player.do_action(&Action::Build(StonePit));
         assert_eq!(false, player.can_play(&Action::Build(Aqueduct)));
         assert_eq!(true, player.do_action(&Action::Build(Quarry)));
@@ -229,7 +234,7 @@ mod tests {
 
     #[test]
     fn can_play_returns_false_when_player_cannot_pay() {
-        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![]);
+        let mut player = new_player(vec![]);
         player.coins = 0; //TODO introduce a Bank type to allow for double-entry bookkeeping instead of this
         assert_eq!(false, player.can_play(&Action::Build(TreeFarm)));
     }
@@ -241,17 +246,21 @@ mod tests {
 
     #[test]
     fn do_action_returns_false_if_action_not_playable() {
-        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
+        let mut player = new_player(vec![LumberYard]);
         assert_eq!(false, player.do_action(&Action::Build(StonePit)));
     }
 
     #[test]
     fn do_action_transfers_built_card_from_hand_to_built_structures() {
-        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, vec![LumberYard]);
+        let mut player = new_player(vec![LumberYard]);
         assert_eq!(0, player.built_structures.len());
         assert_eq!(1, player.hand.len());
         assert_eq!(true, player.do_action(&Action::Build(LumberYard)));
         assert_eq!(1, player.built_structures.len());
         assert_eq!(0, player.hand.len());
+    }
+
+    fn new_player(hand: Vec<Card>) -> Player {
+        Player::new(WonderType::ColossusOfRhodes, WonderSide::A, hand, Box::new(Random {}))
     }
 }

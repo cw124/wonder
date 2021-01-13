@@ -5,6 +5,7 @@ use crate::game::Action;
 use crate::player::Player;
 
 pub mod human;
+pub mod random;
 
 
 /// An algorithm that can play 7 Wonders.

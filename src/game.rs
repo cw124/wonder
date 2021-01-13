@@ -11,6 +11,7 @@ use crate::card;
 use crate::card::{Age, Card};
 use crate::player::Player;
 use crate::wonder::{WonderSide, WonderType};
+use crate::algorithms::PlayingAlgorithm;
 
 /// Represents the whole game state.
 #[derive(Debug)]
@@ -20,19 +21,28 @@ pub struct Game {
 
 #[allow(dead_code)]
 impl Game {
-    /// Generates a new game with the given number of players. Players will be randomly allocated wonders and dealt a
-    /// random hand of first age cards.
+    /// Generates a new game with each player playing according to the given algorithm. Players will be randomly
+    /// allocated wonders and dealt a random hand of first age cards. `algorithms` must have between 3 and 7 entries
+    /// inclusive, corresponding to between 3 and 7 players.
     /// TODO: for now, everyone gets the A side of the wonder.
-    pub fn new(player_count: u32) -> Game {
+    pub fn new(algorithms: Vec<Box<dyn PlayingAlgorithm>>) -> Game {
+        if algorithms.len() < 3 {
+            panic!("Must have at least three players")
+        }
+        if algorithms.len() > 7 {
+            panic!("Must have at most seven players")
+        }
+
         let mut wonder_types: Vec<WonderType> = WonderType::iter().collect();
         wonder_types.shuffle(&mut thread_rng());
 
-        let mut deck = card::new_deck(Age::First, player_count);
+        let mut deck = card::new_deck(Age::First, algorithms.len() as u32);
 
-        // Pick a random wonder each, and deal seven random cards to each player.
-        let players: Vec<Player> = wonder_types
-            .drain(0..player_count as usize)
-            .map(|wonder_type| Player::new(wonder_type, WonderSide::A, deck.drain(0..7).collect()))
+        // For each player, pick a random wonder and deal seven random cards.
+        let players: Vec<Player> = algorithms.into_iter()
+            .zip(wonder_types)
+            .map(|(algorithm, wonder_type)|
+                Player::new(wonder_type, WonderSide::A, deck.drain(0..7).collect(), algorithm))
             .collect();
 
         Game {
@@ -82,9 +92,31 @@ impl Display for Action {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::algorithms::random::Random;
+
+    #[test]
+    #[should_panic(expected = "Must have at least three players")]
+    fn new_panics_if_less_than_three_players() {
+        assert_eq!(3, Game::new(vec![Box::new(Random {}), Box::new(Random {})]).get_player_count());
+    }
+
+    #[test]
+    #[should_panic(expected = "Must have at most seven players")]
+    fn new_panics_if_more_than_seven_players() {
+        assert_eq!(3, Game::new(vec![
+            Box::new(Random {}),
+            Box::new(Random {}),
+            Box::new(Random {}),
+            Box::new(Random {}),
+            Box::new(Random {}),
+            Box::new(Random {}),
+            Box::new(Random {}),
+            Box::new(Random {}),
+        ]).get_player_count());
+    }
 
     #[test]
     fn new_game_has_correct_number_of_players() {
-        assert_eq!(3, Game::new(3).get_player_count());
+        assert_eq!(3, Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]).get_player_count());
     }
 }
