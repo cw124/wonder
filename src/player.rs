@@ -10,19 +10,53 @@ use std::fmt::Debug;
 use crate::algorithms::PlayingAlgorithm;
 
 #[derive(Debug)]
-#[allow(dead_code)]
 pub struct Player {
-    pub algorithm: Box<dyn PlayingAlgorithm>,
-    pub wonder: WonderBoard,
-    pub built_structures: Vec<Card>,
-    built_wonder_stages: Vec<Option<Card>>,
-    // TODO: how to represent this?
-    pub coins: u32,
-    pub hand: Vec<Card>,
+    algorithm: Box<dyn PlayingAlgorithm>,
+    wonder: WonderBoard,
+    built_structures: Vec<Card>,
+    built_wonder_stages: Vec<Option<Card>>, // TODO: how to represent this?
+    coins: u32,
+    hand: Vec<Card>,
 }
 
 #[allow(dead_code)]
 impl Player {
+    pub fn new(
+        wonder_type: WonderType,
+        wonder_side: WonderSide,
+        hand: Vec<Card>,
+        algorithm: Box<dyn PlayingAlgorithm>) -> Player {
+
+        Player {
+            algorithm,
+            wonder: WonderBoard { wonder_type, wonder_side },
+            built_structures: vec![],
+            built_wonder_stages: vec![],
+            coins: 3,
+            hand,
+        }
+    }
+
+    pub fn algorithm(&self) -> &dyn PlayingAlgorithm {
+        &*self.algorithm
+    }
+
+    pub fn wonder(&self) -> &WonderBoard {
+        &self.wonder
+    }
+
+    pub fn built_structures(&self) -> &Vec<Card> {
+        &self.built_structures
+    }
+
+    pub fn coins(&self) -> u32 {
+        self.coins
+    }
+
+    pub fn hand(&self) -> &Vec<Card> {
+        &self.hand
+    }
+
     /// Performs the given [`Action`] on the current player, for example moving a card from the player's hand into the
     /// player's built structures. Returns `true` if the action is legal, `false` otherwise (in which case this function
     /// otherwise does nothing).
@@ -99,22 +133,6 @@ impl Player {
     /// value.
     pub fn strength(&self) -> f32 {
         Self::strength_internal(&self.built_structures)
-    }
-
-    pub fn new(
-        wonder_type: WonderType,
-        wonder_side: WonderSide,
-        hand: Vec<Card>,
-        algorithm: Box<dyn PlayingAlgorithm>) -> Player {
-
-        Player {
-            algorithm,
-            wonder: WonderBoard { wonder_type, wonder_side },
-            built_structures: vec![],
-            built_wonder_stages: vec![],
-            coins: 3,
-            hand,
-        }
     }
 
     pub fn can_play(&self, action: &Action) -> bool {

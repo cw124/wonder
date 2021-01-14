@@ -54,7 +54,7 @@ impl Game {
     pub fn do_turn(&mut self) {
         let actions: Vec<(&mut Player, Action)> = self.players.iter_mut().enumerate()
             .map(|(index, player)| {
-                let action = player.algorithm.get_next_action(&player, index as u32);
+                let action = player.algorithm().get_next_action(&player, index as u32);
                 (player, action)
             })
             .collect();

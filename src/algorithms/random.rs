@@ -12,7 +12,7 @@ pub struct Random {
 
 impl PlayingAlgorithm for Random {
     fn get_next_action(&self, player: &Player, _player_index: u32) -> Action {
-        Action::Build(*player.hand.iter()
+        Action::Build(*player.hand().iter()
             .filter(|card| player.can_play(&Action::Build(**card)))
             .choose(&mut thread_rng())
             .unwrap())

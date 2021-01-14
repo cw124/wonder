@@ -17,20 +17,21 @@ impl Human {
     /// Prints out the current game state for the given user index.
     fn print_state_for_user(player: &Player) {
         let mut hand = Table::new(vec![String::from("Num"), String::from("Card"), String::from("Cost"), String::from("Power")]);
-        player.hand.iter().enumerate()
+        player.hand().iter().enumerate()
             .map(|(i, card)| vec![(i+1).to_string(), card.to_string(), card.cost().to_string(), card.power().to_string()])
             .for_each(|row| hand.add(row));
 
         let mut played = Table::new(vec![String::from("Card"), String::from("Power")]);
-        player.built_structures.iter()
+        player.built_structures().iter()
             .map(|card| vec![card.to_string(), card.power().to_string()])
             .for_each(|row| played.add(row));
 
+        let wonder = player.wonder();
         println!("Wonder: {} (side {:?}). Starting resource: {}",
-                 player.wonder.wonder_type.name(),
-                 player.wonder.wonder_side,
-                 player.wonder.starting_resource());
-        println!("Coins: {}", player.coins);
+                 wonder.wonder_type.name(),
+                 wonder.wonder_side,
+                 wonder.starting_resource());
+        println!("Coins: {}", player.coins());
         println!();
         println!("Hand:");
         hand.print("  ", 4);
@@ -59,6 +60,7 @@ impl Human {
 
         println!();
         print!("Please enter the id of the card to play: ");
+        let hand = player.hand();
         let card: Card = loop {
             io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
             let mut id = String::new();
@@ -67,10 +69,10 @@ impl Human {
                 Ok(id) => id,
                 Err(_) => 0
             };
-            if id < 1 || id > player.hand.len() {
-                print!("Please enter a number between 1 and {} inclusive: ", player.hand.len());
+            if id < 1 || id > hand.len() {
+                print!("Please enter a number between 1 and {} inclusive: ", hand.len());
             } else {
-                let card = player.hand[id - 1];
+                let card = hand[id - 1];
                 if !player.can_play(&Action::Build(card)) {
                     print!("You can't play that card. Please try again: ");
                 } else {
