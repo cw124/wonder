@@ -8,6 +8,7 @@ use crate::resources::{ProducedResources, Resources};
 use crate::wonder::{WonderBoard, WonderSide, WonderType};
 use std::fmt::Debug;
 use crate::algorithms::PlayingAlgorithm;
+use std::mem;
 
 #[derive(Debug)]
 pub struct Player {
@@ -76,6 +77,11 @@ impl Player {
         } else {
             false
         }
+    }
+
+    /// Replaces this player's hand with the given cards, returning the hand the player had before the swap.
+    pub fn swap_hand(&mut self, new_hand: Vec<Card>) -> Vec<Card> {
+        mem::replace(&mut self.hand, new_hand)
     }
 
     fn evaluate_green(colour_cards: &[Card]) -> f32 {
