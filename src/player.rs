@@ -61,18 +61,26 @@ impl Player {
     /// Performs the given [`Action`] on the current player, for example moving a card from the player's hand into the
     /// player's built structures. Returns `true` if the action is legal, `false` otherwise (in which case this function
     /// otherwise does nothing).
-    pub fn do_action(&mut self, action: &Action) -> bool {
+    pub fn do_action(&mut self, action: &Action, discard_pile: &mut Vec<Card>) -> bool {
+        // Removes and returns the given card from the player's hand.
+        fn remove_from_hand(hand: &mut Vec<Card>, card: &Card) -> Card {
+            let index = hand.iter().position(|c| c == card).unwrap();
+            hand.swap_remove(index)
+        }
+
         if self.can_play(action) {
             match action {
                 Action::Build(card) => {
-                    let index = self.hand.iter().position(|c| c == card).unwrap();
-                    let card_from_hand = self.hand.swap_remove(index);
+                    let card_from_hand = remove_from_hand(&mut self.hand, card);
                     self.built_structures.push(card_from_hand);
                     self.coins -= card_from_hand.cost().coins;
                     // TODO: deal with borrowed resources
                 }
                 Action::Wonder(_) => todo!(),
-                Action::Discard => todo!(),
+                Action::Discard(card) => {
+                    discard_pile.push(remove_from_hand(&mut self.hand, card));
+                    self.coins += 3;
+                }
             }
             true
         } else {
@@ -146,7 +154,7 @@ impl Player {
         match action {
             Action::Build(card) => self.can_play_card(card),
             Action::Wonder(_) => todo!(),
-            Action::Discard => todo!(),
+            Action::Discard(_) => true,
         }
     }
 
@@ -235,9 +243,9 @@ mod tests {
     #[test]
     fn can_play_returns_true_after_player_builds_required_resources() {
         let mut player = new_player(vec![StonePit, Quarry, Aqueduct]);
-        player.do_action(&Action::Build(StonePit));
+        player.do_action(&Action::Build(StonePit), &mut vec![]);
         assert_eq!(false, player.can_play(&Action::Build(Aqueduct)));
-        assert_eq!(true, player.do_action(&Action::Build(Quarry)));
+        assert_eq!(true, player.do_action(&Action::Build(Quarry), &mut vec![]));
         assert_eq!(true, player.can_play(&Action::Build(Aqueduct)));
     }
 
@@ -272,7 +280,7 @@ mod tests {
     #[test]
     fn do_action_returns_false_if_action_not_playable() {
         let mut player = new_player(vec![LumberYard]);
-        assert_eq!(false, player.do_action(&Action::Build(StonePit)));
+        assert_eq!(false, player.do_action(&Action::Build(StonePit), &mut vec![]));
     }
 
     #[test]
@@ -280,9 +288,35 @@ mod tests {
         let mut player = new_player(vec![LumberYard]);
         assert_eq!(0, player.built_structures.len());
         assert_eq!(1, player.hand.len());
-        assert_eq!(true, player.do_action(&Action::Build(LumberYard)));
+        assert_eq!(true, player.do_action(&Action::Build(LumberYard), &mut vec![]));
         assert_eq!(1, player.built_structures.len());
         assert_eq!(0, player.hand.len());
+    }
+
+    #[test]
+    fn do_action_decrements_cost_in_coins_when_building() {
+        let mut player = new_player(vec![TreeFarm]);
+        assert_eq!(3, player.coins);
+        assert_eq!(true, player.do_action(&Action::Build(TreeFarm), &mut vec![]));
+        assert_eq!(2, player.coins);
+    }
+
+    #[test]
+    fn do_action_transfers_discarded_card_from_hand_to_discard_pile() {
+        let mut player = new_player(vec![LumberYard]);
+        let mut discard_pile = vec![];
+        assert_eq!(1, player.hand.len());
+        assert_eq!(true, player.do_action(&Action::Discard(LumberYard), &mut discard_pile));
+        assert_eq!(1, discard_pile.len());
+        assert_eq!(0, player.hand.len());
+    }
+
+    #[test]
+    fn do_action_adds_three_coins_when_discarding() {
+        let mut player = new_player(vec![LumberYard]);
+        assert_eq!(3, player.coins);
+        assert_eq!(true, player.do_action(&Action::Discard(LumberYard), &mut vec![]));
+        assert_eq!(6, player.coins);
     }
 
     fn new_player(hand: Vec<Card>) -> Player {

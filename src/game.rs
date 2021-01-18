@@ -24,6 +24,9 @@ pub struct Game {
 
     /// The game turn. Runs from 0 to 17 for 3 ages of 6 turns each.
     turn: u32,
+
+    /// The discard pile. Starts empty and gains the final, unplayed card from each player at the end of each age.
+    discard_pile: Vec<Card>,
 }
 
 #[allow(dead_code)]
@@ -55,6 +58,7 @@ impl Game {
         Game {
             players,
             turn: 0,
+            discard_pile: vec![]
         }
     }
 
@@ -70,7 +74,7 @@ impl Game {
 
         // Update all players "simultaneously".
         for (player, action) in actions {
-            player.do_action(&action);
+            player.do_action(&action, &mut self.discard_pile);
         }
 
         // Pass cards.
@@ -107,7 +111,7 @@ impl Game {
 pub enum Action {
     Build(Card),
     Wonder(Card),
-    Discard
+    Discard(Card),
 }
 
 impl Display for Action {
@@ -115,7 +119,7 @@ impl Display for Action {
         match self {
             Action::Build(card) => write!(f, "Build {}", card.to_string()),
             Action::Wonder(card) => write!(f, "Use {} to build a wonder stage", card.to_string()),
-            Action::Discard => write!(f, "Discard"),
+            Action::Discard(card) => write!(f, "Discard {}", card.to_string()),
         }
     }
 }
