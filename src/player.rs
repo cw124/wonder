@@ -68,7 +68,8 @@ impl Player {
                     let index = self.hand.iter().position(|c| c == card).unwrap();
                     let card_from_hand = self.hand.swap_remove(index);
                     self.built_structures.push(card_from_hand);
-                    // TODO: decrement money, deal with borrowed resources
+                    self.coins -= card_from_hand.cost().coins;
+                    // TODO: deal with borrowed resources
                 }
                 Action::Wonder(_) => todo!(),
                 Action::Discard => todo!(),
