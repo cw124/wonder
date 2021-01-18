@@ -4,7 +4,6 @@ use std::io;
 use std::io::Write;
 
 use crate::algorithms::PlayingAlgorithm;
-use crate::card::Card;
 use crate::game::Action;
 use crate::player::Player;
 use crate::table::Table;
@@ -58,30 +57,46 @@ impl Human {
         println!();
         Self::print_state_for_user(player);
 
-        println!();
-        print!("Please enter the id of the card to play: ");
         let hand = player.hand();
-        let card: Card = loop {
-            io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
-            let mut id = String::new();
-            io::stdin().read_line(&mut id).unwrap();
-            let id: usize = match id.trim().parse() {
-                Ok(id) => id,
-                Err(_) => 0
-            };
-            if id < 1 || id > hand.len() {
-                print!("Please enter a number between 1 and {} inclusive: ", hand.len());
-            } else {
-                let card = hand[id - 1];
-                if !player.can_play(&Action::Build(card)) {
-                    print!("You can't play that card. Please try again: ");
-                } else {
-                    break card;
+
+        let action = loop {
+            println!();
+            print!("Please enter the id of the card to play: ");
+
+            let card = loop {
+                io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
+                let mut id = String::new();
+                io::stdin().read_line(&mut id).unwrap();
+                let id: usize = match id.trim().parse() {
+                    Ok(id) => id,
+                    Err(_) => 0
+                };
+                if id > 0 && id <= hand.len() {
+                    break hand[id - 1];
                 }
+                print!("Please enter a number between 1 and {} inclusive: ", hand.len());
+            };
+
+            print!("And now choose (b) to build or (d) to discard: ");
+            let action = loop {
+                io::stdout().flush().unwrap();
+                let mut choice = String::new();
+                io::stdin().read_line(&mut choice).unwrap();
+                match choice.trim().to_lowercase().as_str() {
+                    "b" => break Action::Build(card),
+                    "d" => break Action::Discard(card),
+                    _ => {},
+                };
+                print!("Please enter either b or d: ");
+            };
+
+            if player.can_play(&action) {
+                break action;
+            } else {
+                println!("You can't play that card. Please try again");
             }
         };
 
-        let action = Action::Build(card);
         println!("Selected action: {}", action.to_string());
 
         action
