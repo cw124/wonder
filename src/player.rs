@@ -25,7 +25,6 @@ impl Player {
     pub fn new(
         wonder_type: WonderType,
         wonder_side: WonderSide,
-        hand: Vec<Card>,
         algorithm: Box<dyn PlayingAlgorithm>) -> Player {
 
         Player {
@@ -34,7 +33,7 @@ impl Player {
             built_structures: vec![],
             built_wonder_stages: vec![],
             coins: 3,
-            hand,
+            hand: vec![],
         }
     }
 
@@ -320,6 +319,8 @@ mod tests {
     }
 
     fn new_player(hand: Vec<Card>) -> Player {
-        Player::new(WonderType::ColossusOfRhodes, WonderSide::A, hand, Box::new(Random {}))
+        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, Box::new(Random {}));
+        player.swap_hand(hand);
+        player
     }
 }

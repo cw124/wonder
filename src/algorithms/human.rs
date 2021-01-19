@@ -9,8 +9,7 @@ use crate::player::Player;
 use crate::table::Table;
 
 #[derive(Debug)]
-pub struct Human {
-}
+pub struct Human;
 
 impl Human {
     /// Prints out the current game state for the given user index.

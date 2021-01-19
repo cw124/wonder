@@ -8,8 +8,7 @@ use crate::game::Action;
 use crate::player::Player;
 
 #[derive(Debug)]
-pub struct Random {
-}
+pub struct Random;
 
 impl PlayingAlgorithm for Random {
     fn get_next_action(&self, player: &Player, _player_index: u32) -> Action {

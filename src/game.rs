@@ -46,13 +46,10 @@ impl Game {
         let mut wonder_types: Vec<WonderType> = WonderType::iter().collect();
         wonder_types.shuffle(&mut thread_rng());
 
-        let mut deck = card::new_deck(Age::First, algorithms.len() as u32);
-
         // For each player, pick a random wonder and deal seven random cards.
         let players: Vec<Player> = algorithms.into_iter()
             .zip(wonder_types)
-            .map(|(algorithm, wonder_type)|
-                Player::new(wonder_type, WonderSide::A, deck.drain(0..7).collect(), algorithm))
+            .map(|(algorithm, wonder_type)| Player::new(wonder_type, WonderSide::A, algorithm))
             .collect();
 
         Game {
@@ -64,6 +61,17 @@ impl Game {
 
     /// Executes a turn of the game. Gets an [`Action`] from each [`Player`] and updates the game state accordingly.
     pub fn do_turn(&mut self) {
+        // At the start of each age, deal new cards and add any remaining cards to the discard pile.
+        if self.turn % 6 == 0 {
+            let mut deck = card::new_deck(self.age(), self.player_count());
+            for player in self.players.iter_mut() {
+                let old_hand = player.swap_hand(deck.drain(0..7).collect());
+                for card in old_hand {
+                    self.discard_pile.push(card);
+                }
+            }
+        }
+
         // Get all actions first.
         let actions: Vec<(&mut Player, Action)> = self.players.iter_mut().enumerate()
             .map(|(index, player)| {
@@ -81,7 +89,7 @@ impl Game {
         let num_players = self.players.len();
         let mut hand = vec![];
         for i in 0..num_players + 1 {
-            let index = if self.age() == 2 {
+            let index = if self.age() == Age::Second {
                 // In the second age, we pass cards anti-clockwise.
                 num_players - i
             } else {
@@ -94,13 +102,18 @@ impl Game {
         self.turn += 1;
     }
 
-    pub fn player_count(&self) -> usize {
-        self.players.len()
+    pub fn player_count(&self) -> u32 {
+        self.players.len() as u32
     }
 
-    /// Returns the current age being played: 1, 2, or 3.
-    pub fn age(&self) -> u32 {
-        self.turn / 6 + 1
+    /// Returns the current age being played.
+    pub fn age(&self) -> Age {
+        match self.turn {
+            0..=5 => Age::First,
+            6..=11 => Age::Second,
+            12..=17 => Age::Third,
+            _ => panic!("Unknown turn!")
+        }
     }
 }
 
@@ -128,7 +141,6 @@ impl Display for Action {
 mod tests {
     use super::*;
     use crate::algorithms::random::Random;
-    use std::cmp::Ordering;
 
     #[test]
     #[should_panic(expected = "Must have at least three players")]
@@ -166,49 +178,65 @@ mod tests {
 
     #[test]
     fn age_updates_correctly_with_turns() {
-        let game = Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]);
-        assert_eq!(1, game.age());
-        // TODO: fix the Random algorithm so it can guarantee to not panic
-        // TODO: deal new cards at the start of the second and third ages
+        let mut game = Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]);
+        assert_eq!(Age::First, game.age());
+        for _i in 0..7 {
+            game.do_turn();
+        }
+        assert_eq!(Age::Second, game.age());
+        for _i in 0..7 {
+            game.do_turn();
+        }
+        assert_eq!(Age::Third, game.age());
+    }
+
+    #[test]
+    fn do_turn_deals_new_cards_at_the_start_of_each_age() {
+        let mut game = Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]);
+        game.do_turn();
+        assert_eq!(6, game.players[0].hand().len());
+        for _i in 0..6 {
+            game.do_turn();
+        }
+        assert_eq!(6, game.players[0].hand().len());
+        for _i in 0..6 {
+            game.do_turn();
+        }
+        assert_eq!(6, game.players[0].hand().len());
     }
 
     #[test]
     fn do_turn_rotates_hands() {
-        // TODO: should probably introduce a deterministic algorithm here, especially when the Random one starts
-        //  building wonders or discarding cards.
-        // TODO: can this be written better in Rust? It's pretty tortuous.
+        let mut game = Game::new(vec![
+            Box::new(AlwaysDiscards {}),
+            Box::new(AlwaysDiscards {}),
+            Box::new(AlwaysDiscards {})]);
 
-        fn sorter(a: &Card, b: &Card) -> Ordering {
-            a.to_string().cmp(&b.to_string())
-        }
+        // We have to do an initial turn so the first age cards are dealt to the players. Before this, nobody has any
+        // cards!
+        game.do_turn();
 
-        let mut game = Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]);
-
-        let mut player0 = game.players[0].hand().clone();
-        player0.sort_by(sorter);
-        let mut player1 = game.players[1].hand().clone();
-        player1.sort_by(sorter);
-        let mut player2 = game.players[2].hand().clone();
-        player2.sort_by(sorter);
+        let player0 = game.players[0].hand().clone();
+        let player1 = game.players[1].hand().clone();
+        let player2 = game.players[2].hand().clone();
 
         game.do_turn();
 
-        // Each player's new hand, plus the card built by the player on the right, should equal the player on the
-        // right's original hand.
+        assert_eq!(game.players[1].hand()[..], player0[..player0.len()-1]);
+        assert_eq!(game.players[2].hand()[..], player1[..player0.len()-1]);
+        assert_eq!(game.players[0].hand()[..], player2[..player0.len()-1]);
+    }
 
-        let mut player1a = game.players[1].hand().clone();
-        player1a.append(&mut game.players[0].built_structures().clone());
-        player1a.sort_by(sorter);
-        assert_eq!(player1a, player0);
-
-        let mut player2a = game.players[2].hand().clone();
-        player2a.append(&mut game.players[1].built_structures().clone());
-        player2a.sort_by(sorter);
-        assert_eq!(player2a, player1);
-
-        let mut player0a = game.players[0].hand().clone();
-        player0a.append(&mut game.players[2].built_structures().clone());
-        player0a.sort_by(sorter);
-        assert_eq!(player0a, player2);
+    /// Always discards the last card in the hand.
+    #[derive(Debug)]
+    pub struct AlwaysDiscards;
+    impl PlayingAlgorithm for AlwaysDiscards {
+        fn get_next_action(&self, player: &Player, _player_index: u32) -> Action {
+            // TODO: we always discard the last card so the order of the hand is not disrupted (because
+            //  player::do_action uses Vec::swap_remove). Ideally don't rely on the implementation of do_action. But
+            //  that involves sorting the hands in order to compare them, which is painful (at least with my current
+            //  Rust skills).
+            Action::Discard(player.hand()[player.hand().len()-1])
+        }
     }
 }
