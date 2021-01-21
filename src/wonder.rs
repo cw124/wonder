@@ -1,7 +1,7 @@
 use crate::resources::Resources;
 use strum_macros::EnumIter;
 
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, Copy, Clone, Eq, PartialEq)]
 #[allow(dead_code)]
 pub enum WonderType {
     ColossusOfRhodes,
@@ -13,14 +13,14 @@ pub enum WonderType {
     PyramidsOfGiza
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[allow(dead_code)]
 pub enum WonderSide {
     A,
     B
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct WonderBoard {
     pub wonder_type: WonderType,
     pub wonder_side: WonderSide

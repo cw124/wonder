@@ -5,13 +5,13 @@ use rand::prelude::*;
 
 use crate::algorithms::PlayingAlgorithm;
 use crate::game::Action;
-use crate::player::Player;
+use crate::player::{Player, PublicPlayer};
 
 #[derive(Debug)]
 pub struct Random;
 
 impl PlayingAlgorithm for Random {
-    fn get_next_action(&self, player: &Player, _player_index: u32) -> Action {
+    fn get_next_action(&self, player: &Player, _player_index: u32, _all_players: &[PublicPlayer]) -> Action {
         let card_to_build = player.hand().iter()
             .filter(|card| player.can_play(&Action::Build(**card)))
             .choose(&mut thread_rng());

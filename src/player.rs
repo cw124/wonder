@@ -225,6 +225,25 @@ impl Player {
     }
 }
 
+/// Represents the aspects of [`Player`] that are public knowledge (ie. visible on the table). Things like a player's
+/// current hand are not included.
+pub struct PublicPlayer<'a> {
+    pub wonder: WonderBoard,
+    pub built_structures: &'a Vec<Card>,
+    pub coins: u32,
+}
+
+impl <'a> PublicPlayer<'a> {
+    /// Creates a [`PublicPlayer`] from a [`Player`].
+    pub fn new(player: &Player) -> PublicPlayer {
+        PublicPlayer {
+            wonder: player.wonder,
+            built_structures: &player.built_structures,
+            coins: player.coins,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use Card::*;
@@ -316,6 +335,15 @@ mod tests {
         assert_eq!(3, player.coins);
         assert_eq!(true, player.do_action(&Action::Discard(LumberYard), &mut vec![]));
         assert_eq!(6, player.coins);
+    }
+
+    #[test]
+    fn new_public_player() {
+        let player = new_player(vec![LumberYard]);
+        let public_player = PublicPlayer::new(&player);
+        assert_eq!(player.wonder, public_player.wonder);
+        assert_eq!(player.built_structures, *public_player.built_structures);
+        assert_eq!(player.coins, public_player.coins);
     }
 
     fn new_player(hand: Vec<Card>) -> Player {

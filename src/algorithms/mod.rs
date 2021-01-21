@@ -2,7 +2,7 @@
 
 use std::fmt::Debug;
 use crate::game::Action;
-use crate::player::Player;
+use crate::player::{Player, PublicPlayer};
 
 pub mod human;
 pub mod random;
@@ -14,5 +14,8 @@ pub trait PlayingAlgorithm: Debug {
     /// Returns the action that should be performed by the given player.
     ///
     /// `player_index` is the zero-indexed position of the player in the game (eg. 0-4 for a five player game).
-    fn get_next_action(&self, player: &Player, player_index: u32) -> Action;
+    ///
+    /// `all_players` is a restricted view of the state of all players in the game. The player whose action is being
+    /// asked for will be at index `player_index`.
+    fn get_next_action(&self, player: &Player, player_index: u32, all_players: &[PublicPlayer]) -> Action;
 }

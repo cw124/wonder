@@ -9,7 +9,7 @@ use strum::IntoEnumIterator;
 
 use crate::card;
 use crate::card::{Age, Card};
-use crate::player::Player;
+use crate::player::{Player, PublicPlayer};
 use crate::wonder::{WonderSide, WonderType};
 use crate::algorithms::PlayingAlgorithm;
 
@@ -73,16 +73,17 @@ impl Game {
         }
 
         // Get all actions first.
-        let actions: Vec<(&mut Player, Action)> = self.players.iter_mut().enumerate()
-            .map(|(index, player)| {
-                let action = player.algorithm().get_next_action(&player, index as u32);
-                (player, action)
-            })
+        let all_players: Vec<PublicPlayer> = self.players.iter()
+            .map(|player| PublicPlayer::new(&player))
+            .collect();
+        let actions: Vec<Action> = self.players.iter().enumerate()
+            .map(|(index, player)| player.algorithm().get_next_action(&player, index as u32, &all_players))
             .collect();
 
         // Update all players "simultaneously".
-        for (player, action) in actions {
-            player.do_action(&action, &mut self.discard_pile);
+        for (i, player) in self.players.iter_mut().enumerate() {
+            let action = &actions[i];
+            player.do_action(action, &mut self.discard_pile);
         }
 
         // Pass cards.
@@ -231,7 +232,7 @@ mod tests {
     #[derive(Debug)]
     pub struct AlwaysDiscards;
     impl PlayingAlgorithm for AlwaysDiscards {
-        fn get_next_action(&self, player: &Player, _player_index: u32) -> Action {
+        fn get_next_action(&self, player: &Player, _player_index: u32, _all_players: &[PublicPlayer]) -> Action {
             // TODO: we always discard the last card so the order of the hand is not disrupted (because
             //  player::do_action uses Vec::swap_remove). Ideally don't rely on the implementation of do_action. But
             //  that involves sorting the hands in order to compare them, which is painful (at least with my current
