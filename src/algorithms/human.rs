@@ -72,10 +72,7 @@ impl Human {
                 io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
                 let mut id = String::new();
                 io::stdin().read_line(&mut id).unwrap();
-               let id: usize = match id.trim().parse() {
-                    Ok(id) => id,
-                    Err(_) => 0
-                };
+                let id = id.trim().parse().unwrap_or(0);
                 if id > 0 && id <= hand.len() {
                     break hand[id - 1];
                 }

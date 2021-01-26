@@ -134,7 +134,7 @@ impl Player {
     fn strength_internal(cards: &[Card]) -> f32 {
         let mut colour_to_structure = HashMap::new();
         for structure in cards.iter() {
-            let colour_structures = colour_to_structure.entry(structure.colour()).or_insert(vec![]);
+            let colour_structures = colour_to_structure.entry(structure.colour()).or_insert_with(Vec::new);
             colour_structures.push(*structure)
         }
 
