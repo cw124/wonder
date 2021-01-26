@@ -343,7 +343,7 @@ mod tests {
         let player = new_player(vec![LumberYard]);
         let public_player = PublicPlayer::new(&player);
         assert_eq!(player.wonder, public_player.wonder);
-        assert_eq!(player.built_structures, *public_player.built_structures);
+        assert_eq!(player.built_structures, public_player.built_structures);
         assert_eq!(player.coins, public_player.coins);
     }
 
