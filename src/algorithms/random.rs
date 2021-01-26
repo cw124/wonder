@@ -4,16 +4,16 @@
 use rand::prelude::*;
 
 use crate::algorithms::PlayingAlgorithm;
-use crate::game::Action;
-use crate::player::{Player, PublicPlayer};
+use crate::game::{Action, VisibleGame};
+use crate::player::Player;
 
 #[derive(Debug)]
 pub struct Random;
 
 impl PlayingAlgorithm for Random {
-    fn get_next_action(&self, player: &Player, _player_index: u32, _all_players: &[PublicPlayer]) -> Action {
+    fn get_next_action(&self, player: &Player, _visible_game: &VisibleGame) -> Action {
         let card_to_build = player.hand().iter()
-            .filter(|card| player.can_play(&Action::Build(**card)))
+            .filter(|card| player.can_play(&Action::Build(**card), _visible_game))
             .choose(&mut thread_rng());
 
         match card_to_build {

@@ -4,8 +4,8 @@ use std::io;
 use std::io::Write;
 
 use crate::algorithms::PlayingAlgorithm;
-use crate::game::Action;
-use crate::player::{Player, PublicPlayer};
+use crate::game::{Action, VisibleGame};
+use crate::player::Player;
 use crate::table::Table;
 
 #[derive(Debug)]
@@ -13,9 +13,12 @@ pub struct Human;
 
 impl Human {
     /// Prints out the current game state for the given user index.
-    fn print_state_for_user(player: &Player, player_index: u32, all_players: &[PublicPlayer]) {
+    fn print_state_for_user(player: &Player, visible_game: &VisibleGame) {
+        let all_players = visible_game.players;
+        let player_index = visible_game.player_index;
+
         // Offset the players so the player we're controller ends up in the middle.
-        let offset = (all_players.len() / 2 + 1) + player_index as usize;
+        let offset = (all_players.len() / 2 + 1) + player_index;
         for i in 0..all_players.len() {
             let index: usize = (i + offset) % all_players.len();
             let other_player = &all_players[index];
@@ -25,7 +28,7 @@ impl Human {
                 .map(|card| vec![card.to_string(), card.power().to_string()])
                 .for_each(|row| played.add(row));
 
-            println!("Player {}{}", index + 1, if index as u32 == player_index { " (you)" } else { "" });
+            println!("Player {}{}", index + 1, if index == player_index { " (you)" } else { "" });
             println!("  Wonder: {} (side {:?}). Starting resource: {}",
                      other_player.wonder.wonder_type.name(),
                      other_player.wonder.wonder_side,
@@ -51,13 +54,13 @@ impl Human {
 
     /// Displays the current state of the game to the user (using [`Human::print_state_for_user`]) and then interactively
     /// asks the user for their action.
-    fn ask_for_action(player: &Player, player_index: u32, all_players: &[PublicPlayer]) -> Action {
+    fn ask_for_action(player: &Player, visible_game: &VisibleGame) -> Action {
         // TODO: Support building a wonder stage.
         // TODO: Support borrowing resources from neighbours.
 
         println!();
         println!();
-        Self::print_state_for_user(player, player_index, all_players);
+        Self::print_state_for_user(player, visible_game);
 
         let hand = player.hand();
 
@@ -69,7 +72,7 @@ impl Human {
                 io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
                 let mut id = String::new();
                 io::stdin().read_line(&mut id).unwrap();
-                let id: usize = match id.trim().parse() {
+               let id: usize = match id.trim().parse() {
                     Ok(id) => id,
                     Err(_) => 0
                 };
@@ -92,7 +95,7 @@ impl Human {
                 print!("Please enter either b or d: ");
             };
 
-            if player.can_play(&action) {
+            if player.can_play(&action, visible_game) {
                 break action;
             } else {
                 println!("You can't play that card. Please try again");
@@ -106,7 +109,7 @@ impl Human {
 }
 
 impl PlayingAlgorithm for Human {
-    fn get_next_action(&self, player: &Player, player_index: u32, all_players: &[PublicPlayer]) -> Action {
-        Self::ask_for_action(player, player_index, all_players)
+    fn get_next_action(&self, player: &Player, visible_game: &VisibleGame) -> Action {
+        Self::ask_for_action(player, visible_game)
     }
 }

@@ -72,18 +72,15 @@ impl Game {
             }
         }
 
-        // Get all actions first.
-        let all_players: Vec<PublicPlayer> = self.players.iter()
+        // Do actions. public_players is an immutable snapshot of the game state before players start moving, so
+        // that each moves "simultaneously".
+        let public_players: Vec<PublicPlayer> = self.players.iter()
             .map(|player| PublicPlayer::new(&player))
             .collect();
-        let actions: Vec<Action> = self.players.iter().enumerate()
-            .map(|(index, player)| player.algorithm().get_next_action(&player, index as u32, &all_players))
-            .collect();
-
-        // Update all players "simultaneously".
-        for (i, player) in self.players.iter_mut().enumerate() {
-            let action = &actions[i];
-            player.do_action(action, &mut self.discard_pile);
+        for (index, player) in self.players.iter_mut().enumerate() {
+            let visible_game = VisibleGame { players: &public_players, player_index: index };
+            let action = player.algorithm().get_next_action(&player, &visible_game);
+            player.do_action(&action, &visible_game, &mut self.discard_pile);
         }
 
         // Pass cards.
@@ -136,6 +133,15 @@ impl Display for Action {
             Action::Discard(card) => write!(f, "Discard {}", card.to_string()),
         }
     }
+}
+
+/// The state of the game visible to all players (ie. excluding things like players' hands).
+pub struct VisibleGame<'a> {
+    /// All players in the game.
+    pub players: &'a [PublicPlayer],
+    /// The index of the player this has been generated for. The point being that, in future, there will be methods to
+    /// get the player's left and right neighbours for example.
+    pub player_index: usize,
 }
 
 #[cfg(test)]
@@ -232,7 +238,7 @@ mod tests {
     #[derive(Debug)]
     pub struct AlwaysDiscards;
     impl PlayingAlgorithm for AlwaysDiscards {
-        fn get_next_action(&self, player: &Player, _player_index: u32, _all_players: &[PublicPlayer]) -> Action {
+        fn get_next_action(&self, player: &Player, _visible_game: &VisibleGame) -> Action {
             // TODO: we always discard the last card so the order of the hand is not disrupted (because
             //  player::do_action uses Vec::swap_remove). Ideally don't rely on the implementation of do_action. But
             //  that involves sorting the hands in order to compare them, which is painful (at least with my current
