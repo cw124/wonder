@@ -1,23 +1,25 @@
 //! Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
 //! a scientific structure).
 
-use crate::card::{Card, Colour};
-use crate::resources::ProducedResources;
-use strum_macros::EnumIter;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use itertools::Itertools;
+use strum_macros::EnumIter;
 
+use crate::card::{Card, Colour};
+use crate::resources::Resources;
 use crate::utils::plural;
 
 /// Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
 /// a scientific structure).
 pub enum Power {
-    /// Produces resources that are purchasable by a neighbour (ie. brown and grey cards).
-    PurchasableProducer(ProducedResources),
-    /// Produces resources that are not purchasable by a neighbour.
-    Producer(ProducedResources),
+    /// Produces resources that are purchasable by a neighbour (ie. brown and grey cards). The vector contains a single
+    /// [`Resources`] item for normal resources, or more than one to represent a choice of resources.
+    PurchasableProducer(Vec<Resources>),
+    /// Produces resources that are not purchasable by a neighbour. The vector contains a single [`Resources`] item for
+    /// normal resources, or more than one to represent a choice of resources.
+    Producer(Vec<Resources>),
     /// Provides victory points.
     VictoryPoints(u32),
     /// Provides coins.
@@ -69,17 +71,15 @@ impl Power {
 impl Display for Power {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", match self {
-            Power::PurchasableProducer(ProducedResources::Single(resource)) => format!("{}", resource),
-            Power::PurchasableProducer(ProducedResources::Choice(resources)) => format!("{}", resources.iter().format(" or ")),
-            Power::Producer(ProducedResources::Single(resource)) => format!("{}", resource),
-            Power::Producer(ProducedResources::Choice(resources)) => format!("{}", resources.iter().format(" or ")),
-            Power::VictoryPoints(points) => plural(*points, "VP"),
-            Power::Coins(coins) => plural(*coins, "coin"),
+            Power::PurchasableProducer(resources) => format!("{}", resources.iter().format(" or ")),
+            Power::Producer(resources) => format!("{}", resources.iter().format(" or ")),
+            Power::VictoryPoints(points) => plural(*points as i32, "VP"),
+            Power::Coins(coins) => plural(*coins as i32, "coin"),
             Power::BuyBrownAntiClockwise => "Buy brown cards for 1 coin anti-clockwise".to_string(),
             Power::BuyBrownClockwise => "Buy brown cards for 1 coin clockwise".to_string(),
             Power::BuyGrey => "Buy grey cards for 1 coin".to_string(),
             Power::Science(symbol) => format!("{}", symbol.iter().map(|symbol| format!("{} symbol", symbol)).format(" or ")),
-            Power::Shields(shields) => plural(*shields, "shield"),
+            Power::Shields(shields) => plural(*shields as i32, "shield"),
             Power::PerGameItemRewards(_) => "Per game item thing (TODO)".to_string()  // TODO
         })
     }

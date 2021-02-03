@@ -11,6 +11,7 @@ mod game;
 mod utils;
 mod table;
 mod algorithms;
+mod action;
 
 fn main() {
     let mut game = Game::new(vec![Box::new(Human {}), Box::new(Random {}), Box::new(Random {})]);

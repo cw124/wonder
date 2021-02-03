@@ -2,7 +2,8 @@
 
 use std::fmt::Debug;
 
-use crate::game::{Action, VisibleGame};
+use crate::action::Action;
+use crate::game::VisibleGame;
 use crate::player::Player;
 
 pub mod human;

@@ -4,9 +4,10 @@ use std::io;
 use std::io::Write;
 
 use crate::algorithms::PlayingAlgorithm;
-use crate::game::{Action, VisibleGame};
+use crate::game::VisibleGame;
 use crate::player::Player;
 use crate::table::Table;
+use crate::action::{Action, Borrowing};
 
 #[derive(Debug)]
 pub struct Human;
@@ -85,7 +86,7 @@ impl Human {
                 let mut choice = String::new();
                 io::stdin().read_line(&mut choice).unwrap();
                 match choice.trim().to_lowercase().as_str() {
-                    "b" => break Action::Build(card),
+                    "b" => break Action::Build(card, Borrowing::no_borrowing()),
                     "d" => break Action::Discard(card),
                     _ => {},
                 };
