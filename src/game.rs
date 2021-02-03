@@ -1,8 +1,5 @@
 //! Represents the whole game state.
 
-use core::fmt;
-use std::fmt::{Display, Formatter};
-
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
@@ -77,10 +74,12 @@ impl Game {
         let public_players: Vec<PublicPlayer> = self.players.iter()
             .map(|player| PublicPlayer::new(&player))
             .collect();
-        for (index, player) in self.players.iter_mut().enumerate() {
+        for index in 0..self.players.len() {
+            let (mut right_player, player, mut left_player) =
+                Self::get_mutable_player_and_neighbours(&mut self.players, index);
             let visible_game = VisibleGame { players: &public_players, player_index: index };
             let action = player.algorithm().get_next_action(&player, &visible_game);
-            player.do_action(&action, &visible_game, &mut self.discard_pile);
+            player.do_action(&action, &visible_game, &mut left_player, &mut right_player, &mut self.discard_pile);
         }
 
         // Pass cards.
@@ -113,41 +112,60 @@ impl Game {
             _ => panic!("Unknown turn!")
         }
     }
-}
 
-/// Represents an action.
-/// TODO: this needs to one day record coins paid for borrowed resources.
-#[allow(dead_code)]
-#[derive(Debug)]
-pub enum Action {
-    Build(Card),
-    Wonder(Card),
-    Discard(Card),
-}
+    /// Given the index of a player, returns a mutable borrow of that player, as well as the left and right neighbours
+    /// of the player. This is super-horrible in Rust as far as I can tell. Perhaps there's a better way...
+    fn get_mutable_player_and_neighbours(players: &mut Vec<Player>, index: usize)
+            -> (&mut Player, &mut Player, &mut Player) {
+        if index == 0 {
+            // player=0, left=1, right=n
+            let (player, after) = players.split_first_mut().unwrap();
+            let (right_player, rest) = after.split_last_mut().unwrap();
+            let (left_player, _) = rest.split_first_mut().unwrap();
+            (right_player, player, left_player)
 
-impl Display for Action {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Action::Build(card) => write!(f, "Build {}", card.to_string()),
-            Action::Wonder(card) => write!(f, "Use {} to build a wonder stage", card.to_string()),
-            Action::Discard(card) => write!(f, "Discard {}", card.to_string()),
+        } else if index == players.len() - 1 {
+            // player=n, left=0, right=n-1
+            let (player, before) = players.split_last_mut().unwrap();
+            let (left_player, rest) = before.split_first_mut().unwrap();
+            let (right_player, _) = rest.split_last_mut().unwrap();
+            (right_player, player, left_player)
+
+        } else {
+            // player=i, left=i+1, right=i-1
+            let (before, player_and_after) = players.split_at_mut(index);
+            let (player_slice, after) = player_and_after.split_at_mut(1);
+            (&mut before[index - 1], &mut player_slice[0], &mut after[0])
         }
     }
 }
 
 /// The state of the game visible to all players (ie. excluding things like players' hands).
+#[derive(Debug)]
 pub struct VisibleGame<'a> {
     /// All players in the game.
     pub players: &'a [PublicPlayer],
-    /// The index of the player this has been generated for. The point being that, in future, there will be methods to
-    /// get the player's left and right neighbours for example.
+    /// The index of the player this has been generated for.
     pub player_index: usize,
+}
+
+impl<'a> VisibleGame<'a> {
+    // Returns the [`PublicPlayer`] on the current player's left, ie. clockwise.
+    pub fn left_neighbour(&self) -> &PublicPlayer {
+        &self.players[(self.player_index + 1) % self.players.len()]
+    }
+
+    // Returns the [`PublicPlayer`] on the current player's right, ie. anti-clockwise.
+    pub fn right_neighbour(&self) -> &PublicPlayer {
+        &self.players[(self.player_index + self.players.len() - 1) % self.players.len()]
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::algorithms::random::Random;
+    use crate::action::Action;
 
     #[test]
     #[should_panic(expected = "Must have at least three players")]
@@ -232,6 +250,31 @@ mod tests {
         assert_eq!(game.players[1].hand()[..], player0[..player0.len()-1]);
         assert_eq!(game.players[2].hand()[..], player1[..player0.len()-1]);
         assert_eq!(game.players[0].hand()[..], player2[..player0.len()-1]);
+    }
+
+    #[test]
+    fn get_mutable_player_and_neighbours() {
+        let mut players = vec![
+            Player::new(WonderType::ColossusOfRhodes, WonderSide::A, Box::new(Random {})),
+            Player::new(WonderType::LighthouseOfAlexandria, WonderSide::A, Box::new(Random {})),
+            Player::new(WonderType::TempleOfArtemis, WonderSide::A, Box::new(Random {})),
+            Player::new(WonderType::HangingGardensOfBabylon, WonderSide::A, Box::new(Random {})),
+        ];
+
+        let (right, player, left) = Game::get_mutable_player_and_neighbours(&mut players, 0);
+        assert_eq!(WonderType::HangingGardensOfBabylon, right.wonder().wonder_type);
+        assert_eq!(WonderType::ColossusOfRhodes, player.wonder().wonder_type);
+        assert_eq!(WonderType::LighthouseOfAlexandria, left.wonder().wonder_type);
+
+        let (right, player, left) = Game::get_mutable_player_and_neighbours(&mut players, 1);
+        assert_eq!(WonderType::ColossusOfRhodes, right.wonder().wonder_type);
+        assert_eq!(WonderType::LighthouseOfAlexandria, player.wonder().wonder_type);
+        assert_eq!(WonderType::TempleOfArtemis, left.wonder().wonder_type);
+
+        let (right, player, left) = Game::get_mutable_player_and_neighbours(&mut players, 3);
+        assert_eq!(WonderType::TempleOfArtemis, right.wonder().wonder_type);
+        assert_eq!(WonderType::HangingGardensOfBabylon, player.wonder().wonder_type);
+        assert_eq!(WonderType::ColossusOfRhodes, left.wonder().wonder_type);
     }
 
     /// Always discards the last card in the hand.

@@ -6,13 +6,12 @@ use rand::thread_rng;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-
 use crate::power::{CountableGameItem, ScienceItem};
 use crate::power::PerGameItemReward;
 use crate::power::Power;
-use crate::resources::{ProducedResources, Resources};
+use crate::resources::Resources;
 
-#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, EnumIter)]
 #[allow(dead_code)]
 pub enum Card {
 
@@ -180,7 +179,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::wood(1))),
+                power: Power::PurchasableProducer(vec![Resources::wood(1)]),
             },
 
             Card::StonePit => CardInfo {
@@ -190,7 +189,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::stone(1))),
+                power: Power::PurchasableProducer(vec![Resources::stone(1)]),
             },
 
             Card::ClayPool => CardInfo {
@@ -200,7 +199,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::clay(1))),
+                power: Power::PurchasableProducer(vec![Resources::clay(1)]),
             },
 
             Card::OreVein => CardInfo {
@@ -210,7 +209,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::ore(1))),
+                power: Power::PurchasableProducer(vec![Resources::ore(1)]),
             },
 
             Card::TreeFarm => CardInfo {
@@ -220,9 +219,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
-                    Resources::wood(1),
-                    Resources::clay(1)])),
+                power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::clay(1)]),
             },
 
             Card::Excavation => CardInfo {
@@ -232,9 +229,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
-                    Resources::stone(1),
-                    Resources::clay(1)])),
+                power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::clay(1)]),
             },
 
             Card::ClayPit => CardInfo {
@@ -244,9 +239,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
-                    Resources::clay(1),
-                    Resources::ore(1)])),
+                power: Power::PurchasableProducer(vec![Resources::clay(1), Resources::ore(1)]),
             },
 
             Card::TimberYard => CardInfo {
@@ -256,9 +249,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
-                    Resources::stone(1),
-                    Resources::wood(1)])),
+                power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::wood(1)]),
             },
 
             Card::ForestCave => CardInfo {
@@ -268,9 +259,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
-                    Resources::wood(1),
-                    Resources::ore(1)])),
+                power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::ore(1)]),
             },
 
             Card::Mine => CardInfo {
@@ -280,9 +269,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Choice(vec![
-                    Resources::ore(1),
-                    Resources::stone(1)])),
+                power: Power::PurchasableProducer(vec![Resources::ore(1), Resources::stone(1)]),
             },
 
             Card::Loom1 => CardInfo {
@@ -292,7 +279,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Grey,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::loom(1))),
+                power: Power::PurchasableProducer(vec![Resources::loom(1)]),
             },
 
             Card::Glassworks1 => CardInfo {
@@ -302,7 +289,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Grey,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::glass(1))),
+                power: Power::PurchasableProducer(vec![Resources::glass(1)]),
             },
 
             Card::Press1 => CardInfo {
@@ -312,7 +299,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Grey,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::papyrus(1))),
+                power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
             },
 
             Card::Pawnshop => CardInfo {
@@ -462,7 +449,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::wood(2))),
+                power: Power::PurchasableProducer(vec![Resources::wood(2)]),
             },
 
             Card::Quarry => CardInfo {
@@ -472,7 +459,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::stone(2))),
+                power: Power::PurchasableProducer(vec![Resources::stone(2)]),
             },
 
             Card::Brickyard => CardInfo {
@@ -482,7 +469,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::clay(2))),
+                power: Power::PurchasableProducer(vec![Resources::clay(2)]),
             },
 
             Card::Foundry => CardInfo {
@@ -492,7 +479,7 @@ impl Card {
                 cost: Resources::coins(1),
                 chains_to: vec![],
                 colour: Colour::Brown,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::ore(2))),
+                power: Power::PurchasableProducer(vec![Resources::ore(2)]),
             },
 
             Card::Loom2 => CardInfo {
@@ -502,7 +489,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Grey,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::loom(1))),
+                power: Power::PurchasableProducer(vec![Resources::loom(1)]),
             },
 
             Card::Glassworks2 => CardInfo {
@@ -512,7 +499,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Grey,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::glass(1))),
+                power: Power::PurchasableProducer(vec![Resources::glass(1)]),
             },
 
             Card::Press2 => CardInfo {
@@ -522,7 +509,7 @@ impl Card {
                 cost: Resources::free(),
                 chains_to: vec![],
                 colour: Colour::Grey,
-                power: Power::PurchasableProducer(ProducedResources::Single(Resources::papyrus(1))),
+                power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
             },
 
             Card::Aqueduct => CardInfo {
@@ -572,10 +559,7 @@ impl Card {
                 cost: Resources::clay(2),
                 chains_to: vec![Card::Haven],
                 colour: Colour::Yellow,
-                power: Power::Producer(ProducedResources::Choice(vec![
-                    Resources::loom(1),
-                    Resources::glass(1),
-                    Resources::papyrus(1)])),
+                power: Power::Producer(vec![Resources::loom(1), Resources::glass(1), Resources::papyrus(1)]),
             },
 
             Card::Caravansery => CardInfo {
@@ -585,11 +569,11 @@ impl Card {
                 cost: Resources::wood(2),
                 chains_to: vec![Card::Lighthouse],
                 colour: Colour::Yellow,
-                power: Power::Producer(ProducedResources::Choice(vec![
+                power: Power::Producer(vec![
                     Resources::wood(1),
                     Resources::stone(1),
                     Resources::ore(1),
-                    Resources::clay(1)])),
+                    Resources::clay(1)]),
             },
 
             Card::Vineyard => CardInfo {
