@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::mem;
 
-use crate::action::{Action, Borrow, Borrowing};
+use crate::action::{Action, Borrow, Borrowing, ActionOptions};
 use crate::algorithms::PlayingAlgorithm;
 use crate::card::{Card, Colour};
 use crate::game::VisibleGame;
@@ -190,7 +190,7 @@ impl Player {
         //
         // TODO: it's a bit inefficient to calculate this again. Perhaps an action should exactly define what's
         //  happening so we can directly check it.
-        for action in self.options_for_card(card, visible_game) {
+        for action in self.options_for_card(card, visible_game).actions {
             if let Action::Build(_, borrowing1) = action {
                 if borrowing1 == *borrowing {
                     return true;
@@ -201,19 +201,19 @@ impl Player {
         false
     }
 
-    /// Given a card and a [`VisibleGame`], returns a vector containing all possible actions that can be taken to build
-    /// the card. However, because we do not (currently at least) include in the action which own (ie. non borrowed)
-    /// cards are used, only a single action is ever returned where there is no borrowing. In other words, if the player
-    /// can afford a card using several different combinations of their own built structures and/or starting wonder
-    /// resource, then only a single action will represent all of these combinations. If the user has several different
-    /// options when borrowing, each of these is returned as a separate action. This allows the player to choose how
-    /// much money to spend on borrowing, and how much to give to each neighbour.
+    /// Given a card and a [`VisibleGame`], returns an [`ActionOptions`] containing all possible actions that can be
+    /// taken to build the card. However, because we do not (currently at least) include in the action which own (ie.
+    /// non borrowed) cards are used, only a single action is ever returned where there is no borrowing. In other words,
+    /// if the player can afford a card using several different combinations of their own built structures and/or
+    /// starting wonder resource, then only a single action will represent all of these combinations. If the user has
+    /// several different options when borrowing, each of these is returned as a separate action. This allows the player
+    /// to choose how much money to spend on borrowing, and how much to give to each neighbour.
     ///
     /// If the player cannot play the card, an empty vector is returned.
     ///
     /// Note this function doesn't verify the cards the player has in their hand, meaning `card` can be a card the
     /// player doesn't have. As long as they can afford it, valid actions will be returned to achieve it.
-    pub fn options_for_card(&self, card: &Card, visible_game: &VisibleGame) -> Vec<Action> {
+    pub fn options_for_card(&self, card: &Card, visible_game: &VisibleGame) -> ActionOptions {
         #[derive(Copy, Clone, Eq, PartialEq)]
         enum Source {
             Own,
@@ -284,7 +284,7 @@ impl Player {
         }
         if required_resources.satisfied() {
             // Can afford with own resources.
-            return vec![Action::Build(*card, Borrowing::no_borrowing())]
+            return ActionOptions { actions: vec![Action::Build(*card, Borrowing::no_borrowing())] }
         }
 
         // We now add all choice cards owned by the player, and all borrowable resources owned by their neighbours, and
@@ -351,7 +351,7 @@ impl Player {
             }
         }
 
-        actions
+        ActionOptions { actions }
     }
 }
 
@@ -388,7 +388,7 @@ mod tests {
     fn options_for_card_returns_nothing_if_insufficient_resources() {
         // Stockade requires 1 wood, we have 1 ore (starting resource).
         let player = new_player(vec![]);
-        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&players())).len());
+        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&players())).actions.len());
     }
 
     #[test]
@@ -396,28 +396,28 @@ mod tests {
         // Tree farm requires 1 coin, which we don't have.
         let mut player = new_player(vec![]);
         player.coins = 0;
-        assert_eq!(0, player.options_for_card(&TreeFarm, &visible_game(&players())).len());
+        assert_eq!(0, player.options_for_card(&TreeFarm, &visible_game(&players())).actions.len());
     }
 
     #[test]
     fn options_for_card_returns_one_option_if_sufficient_resources() {
         // Barracks requires 1 ore, which we have (starting resource).
         let player = new_player(vec![]);
-        assert_eq!(1, player.options_for_card(&Barracks, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&Barracks, &visible_game(&players())).actions.len());
     }
 
     #[test]
     fn options_for_card_returns_one_option_if_sufficient_coins() {
         // Tree farm requires 1 coin, which we have (starting coins).
         let player = new_player(vec![]);
-        assert_eq!(1, player.options_for_card(&TreeFarm, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&TreeFarm, &visible_game(&players())).actions.len());
     }
 
     #[test]
     fn options_for_card_returns_one_option_if_free() {
         // Lumber yard is free.
         let player = new_player(vec![]);
-        assert_eq!(1, player.options_for_card(&LumberYard, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&LumberYard, &visible_game(&players())).actions.len());
     }
 
     #[test]
@@ -425,7 +425,7 @@ mod tests {
         // Stockade requires 1 wood. Tree farm provides wood or clay.
         let mut player = new_player(vec![TreeFarm]);
         build(&mut player, TreeFarm);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&players())).actions.len());
     }
 
     #[test]
@@ -434,7 +434,7 @@ mod tests {
         let mut player = new_player(vec![TreeFarm, Glassworks1]);
         build(&mut player, TreeFarm);
         build(&mut player, Glassworks1);
-        assert_eq!(0, player.options_for_card(&Temple, &visible_game(&players())).len());
+        assert_eq!(0, player.options_for_card(&Temple, &visible_game(&players())).actions.len());
     }
 
     #[test]
@@ -443,7 +443,7 @@ mod tests {
         let mut player = new_player(vec![LumberYard, TreeFarm]);
         build(&mut player, LumberYard);
         build(&mut player, TreeFarm);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&players())).actions.len());
     }
 
     #[test]
@@ -452,7 +452,7 @@ mod tests {
         let mut player = new_player(vec![LumberYard, TreeFarm]);
         build(&mut player, LumberYard);
         build(&mut player, TreeFarm);
-        assert_eq!(1, player.options_for_card(&Caravansery, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&Caravansery, &visible_game(&players())).actions.len());
     }
 
     #[test]
@@ -460,7 +460,7 @@ mod tests {
         // Stockade requires 1 wood, we can borrow from a neighbour.
         let player = new_player(vec![]);
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).len());
+        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -469,7 +469,7 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 1;
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&public_players)).len());
+        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -478,7 +478,7 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 3;
         let public_players = players_with_resources(vec![LumberYard, TreeFarm], vec![]);
-        assert_eq!(0, player.options_for_card(&Caravansery, &visible_game(&public_players)).len());
+        assert_eq!(0, player.options_for_card(&Caravansery, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -487,7 +487,7 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 3;
         let public_players = players_with_resources(vec![Sawmill], vec![]);
-        assert_eq!(0, player.options_for_card(&Caravansery, &visible_game(&public_players)).len());
+        assert_eq!(0, player.options_for_card(&Caravansery, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -495,7 +495,7 @@ mod tests {
         // Stockade requires 1 wood, we can borrow from either neighbour.
         let player = new_player(vec![]);
         let public_players = players_with_resources(vec![LumberYard], vec![TreeFarm]);
-        assert_eq!(2, player.options_for_card(&Stockade, &visible_game(&public_players)).len());
+        assert_eq!(2, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -504,7 +504,7 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 4;
         let public_players = players_with_resources(vec![LumberYard], vec![TreeFarm]);
-        assert_eq!(1, player.options_for_card(&Caravansery, &visible_game(&public_players)).len());
+        assert_eq!(1, player.options_for_card(&Caravansery, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -514,7 +514,7 @@ mod tests {
         let mut player = new_player(vec![TreeFarm]);
         build(&mut player, TreeFarm);
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).len());
+        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -524,7 +524,7 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 4;
         let public_players = players_with_resources(vec![LumberYard, StonePit], vec![]);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).len());
+        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -538,7 +538,7 @@ mod tests {
         build(&mut player, Press1);
         player.coins = 4;
         let public_players = players_with_resources(vec![ClayPit, Brickyard], vec![ClayPool]);
-        assert_eq!(6, player.options_for_card(&Laboratory, &visible_game(&public_players)).len());
+        assert_eq!(6, player.options_for_card(&Laboratory, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -551,7 +551,7 @@ mod tests {
         build(&mut player, ClayPit);
         player.coins = 4;
         let public_players = players_with_resources(vec![Quarry], vec![]);
-        assert_eq!(1, player.options_for_card(&Aqueduct, &visible_game(&public_players)).len());
+        assert_eq!(1, player.options_for_card(&Aqueduct, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -559,7 +559,7 @@ mod tests {
         // Stockade requires 1 wood. Our neighbour has a caravansery, which produces wood, but it is not borrowable.
         let player = new_player(vec![]);
         let public_players = players_with_resources(vec![Caravansery], vec![]);
-        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&public_players)).len());
+        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
     }
 
     #[test]
@@ -568,7 +568,7 @@ mod tests {
         let mut player = new_player(vec![Sawmill, Caravansery]);
         build(&mut player, Sawmill);
         build(&mut player, Caravansery);
-        assert_eq!(1, player.options_for_card(&Baths, &visible_game(&players())).len());
+        assert_eq!(1, player.options_for_card(&Baths, &visible_game(&players())).actions.len());
     }
 
     #[test]

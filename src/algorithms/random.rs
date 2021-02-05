@@ -15,8 +15,8 @@ impl PlayingAlgorithm for Random {
     fn get_next_action(&self, player: &Player, visible_game: &VisibleGame) -> Action {
         let action_to_take = player.hand().iter()
             .map(|card| player.options_for_card(card, visible_game))
-            .filter(|actions| !actions.is_empty())
-            .map(|mut actions| actions.swap_remove(thread_rng().gen_range(0, actions.len())))
+            .filter(|actions| actions.possible())
+            .map(|mut actions| actions.actions.swap_remove(thread_rng().gen_range(0, actions.actions.len())))
             .choose(&mut thread_rng());
 
         match action_to_take {
