@@ -150,14 +150,24 @@ pub struct VisibleGame<'a> {
 }
 
 impl<'a> VisibleGame<'a> {
-    // Returns the [`PublicPlayer`] on the current player's left, ie. clockwise.
+    /// Returns the [`PublicPlayer`] on the current player's left, ie. clockwise.
     pub fn left_neighbour(&self) -> &PublicPlayer {
-        &self.players[(self.player_index + 1) % self.players.len()]
+        &self.players[self.left_neighbour_index()]
     }
 
-    // Returns the [`PublicPlayer`] on the current player's right, ie. anti-clockwise.
+    /// Returns the [`PublicPlayer`] on the current player's right, ie. anti-clockwise.
     pub fn right_neighbour(&self) -> &PublicPlayer {
-        &self.players[(self.player_index + self.players.len() - 1) % self.players.len()]
+        &self.players[self.right_neighbour_index()]
+    }
+
+    /// Returns the 0-based index of the left neighbour.
+    pub fn left_neighbour_index(&self) -> usize {
+        (self.player_index + 1) % self.players.len()
+    }
+
+    /// Returns the 0-based index of the right neighbour.
+    pub fn right_neighbour_index(&self) -> usize {
+        (self.player_index + self.players.len() - 1) % self.players.len()
     }
 }
 

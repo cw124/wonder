@@ -11,7 +11,7 @@ use crate::player::PublicPlayer;
 
 /// Represents an action.
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Action {
     Build(Card, Borrowing),
     Wonder(Card, Borrowing),
@@ -28,8 +28,33 @@ impl Display for Action {
     }
 }
 
+/// Represents the possible actions a player can take in order to lay a particular card.
+pub struct ActionOptions {
+    pub actions: Vec<Action>,
+}
+
+impl ActionOptions {
+    /// Returns `true` if it's possible to lay the card, `false` otherwise.
+    pub fn possible(&self) -> bool {
+        !self.actions.is_empty()
+    }
+
+    /// Returns `true` if the card can be laid using the player's own built structures only (no borrowing).
+    pub fn own_cards_only(&self) -> bool {
+        if self.actions.len() != 1 {
+            return false;
+        }
+        if let Action::Build(_, borrowing) = &self.actions[0] {
+            if !borrowing.has_borrowing() {
+                return true;
+            }
+        }
+        false
+    }
+}
+
 /// Represents resources borrowed from left and right neighbours as part of an action.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Borrowing {
     pub left: Vec<Borrow>,
     pub right: Vec<Borrow>,
@@ -53,17 +78,22 @@ impl Borrowing {
         }
         valid_on(&self.left, &visible_game.left_neighbour()) && valid_on(&self.right, &visible_game.right_neighbour())
     }
+
+    /// Returns true if this borrowing plan has not borrowing (ie. the player can use their own cards exclusively).
+    pub fn has_borrowing(&self) -> bool {
+        !self.left.is_empty() || !self.right.is_empty()
+    }
 }
 
 /// Represents the borrowing of a specific resource.
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub struct Borrow {
     /// The card the resource is on.
-    card: Card,
+    pub card: Card,
     /// The index of the resource on the card that is being borrowed. Always 0 except for resources that generate two
     /// resources in one go (ie. [`Sawmill`], [`Quarry`], [`Brickyard`], and [`Foundry`]), where the first resource is 0
     /// and the second resource is 1.
-    index: u32,
+    pub index: u32,
 }
 
 impl Borrow {
@@ -77,5 +107,34 @@ impl Borrow {
             }
         }
         Borrow { card, index }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn possible_with_no_options() {
+        let options = ActionOptions { actions: vec![] };
+        assert_eq!(false, options.possible());
+    }
+
+    #[test]
+    fn possible_with_options() {
+        let options = ActionOptions { actions: vec![Action::Build(Card::LumberYard, Borrowing::no_borrowing())] };
+        assert_eq!(true, options.possible());
+    }
+
+    #[test]
+    fn own_cards_only_with_no_borrowing() {
+        let options = ActionOptions { actions: vec![Action::Build(Card::LumberYard, Borrowing::no_borrowing())] };
+        assert_eq!(true, options.own_cards_only());
+    }
+
+    #[test]
+    fn own_cards_only_with_borrowing() {
+        let options = ActionOptions { actions: vec![Action::Build(Card::Stockade, Borrowing::new(vec![Borrow::new(Card::LumberYard, 0)], vec![]))] };
+        assert_eq!(false, options.own_cards_only());
     }
 }
