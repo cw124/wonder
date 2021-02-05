@@ -1,13 +1,13 @@
 //! An action defines what a user does each turn (builds a structure, builds a wonder stage, discards a card).
 
 use crate::card::Card;
-use std::fmt::{Display, Formatter};
-use std::fmt;
 use crate::game::VisibleGame;
-use std::collections::HashSet;
-use std::iter::FromIterator;
-use crate::power::Power;
 use crate::player::PublicPlayer;
+use crate::power::Power;
+use std::collections::HashSet;
+use std::fmt;
+use std::fmt::{Display, Formatter};
+use std::iter::FromIterator;
 
 /// Represents an action.
 #[allow(dead_code)]
@@ -122,19 +122,28 @@ mod tests {
 
     #[test]
     fn possible_with_options() {
-        let options = ActionOptions { actions: vec![Action::Build(Card::LumberYard, Borrowing::no_borrowing())] };
+        let options = ActionOptions {
+            actions: vec![Action::Build(Card::LumberYard, Borrowing::no_borrowing())],
+        };
         assert_eq!(true, options.possible());
     }
 
     #[test]
     fn own_cards_only_with_no_borrowing() {
-        let options = ActionOptions { actions: vec![Action::Build(Card::LumberYard, Borrowing::no_borrowing())] };
+        let options = ActionOptions {
+            actions: vec![Action::Build(Card::LumberYard, Borrowing::no_borrowing())],
+        };
         assert_eq!(true, options.own_cards_only());
     }
 
     #[test]
     fn own_cards_only_with_borrowing() {
-        let options = ActionOptions { actions: vec![Action::Build(Card::Stockade, Borrowing::new(vec![Borrow::new(Card::LumberYard, 0)], vec![]))] };
+        let options = ActionOptions {
+            actions: vec![Action::Build(
+                Card::Stockade,
+                Borrowing::new(vec![Borrow::new(Card::LumberYard, 0)], vec![]),
+            )],
+        };
         assert_eq!(false, options.own_cards_only());
     }
 }

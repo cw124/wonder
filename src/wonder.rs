@@ -10,20 +10,20 @@ pub enum WonderType {
     HangingGardensOfBabylon,
     StatueOfZeus,
     MausoleumOfHalicarnassus,
-    PyramidsOfGiza
+    PyramidsOfGiza,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[allow(dead_code)]
 pub enum WonderSide {
     A,
-    B
+    B,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct WonderBoard {
     pub wonder_type: WonderType,
-    pub wonder_side: WonderSide
+    pub wonder_side: WonderSide,
 }
 
 #[allow(dead_code)]
@@ -36,7 +36,7 @@ impl WonderType {
             WonderType::HangingGardensOfBabylon => "The Hanging Gardens of Babylon",
             WonderType::StatueOfZeus => "The Statue of Zeus in Olympia",
             WonderType::MausoleumOfHalicarnassus => "The Mausoleum of Halicarnassus",
-            WonderType::PyramidsOfGiza => "The Pyramids of Giza"
+            WonderType::PyramidsOfGiza => "The Pyramids of Giza",
         }
     }
 
@@ -84,7 +84,7 @@ impl WonderBoard {
             (WonderType::LighthouseOfAlexandria, WonderSide::B, 2) => Resources::stone(3),
             (WonderType::LighthouseOfAlexandria, WonderSide::B, _) => panic!(),
 
-            _ => todo!()
+            _ => todo!(),
         }
     }
 

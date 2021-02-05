@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::mem;
 
-use crate::action::{Action, Borrow, Borrowing, ActionOptions};
+use crate::action::{Action, ActionOptions, Borrow, Borrowing};
 use crate::algorithms::PlayingAlgorithm;
 use crate::card::{Card, Colour};
 use crate::game::VisibleGame;
@@ -23,14 +23,13 @@ pub struct Player {
 
 #[allow(dead_code)]
 impl Player {
-    pub fn new(
-        wonder_type: WonderType,
-        wonder_side: WonderSide,
-        algorithm: Box<dyn PlayingAlgorithm>) -> Player {
-
+    pub fn new(wonder_type: WonderType, wonder_side: WonderSide, algorithm: Box<dyn PlayingAlgorithm>) -> Player {
         Player {
             algorithm,
-            wonder: WonderBoard { wonder_type, wonder_side },
+            wonder: WonderBoard {
+                wonder_type,
+                wonder_side,
+            },
             built_structures: vec![],
             built_wonder_stages: vec![],
             coins: 3,
@@ -65,13 +64,13 @@ impl Player {
     /// `left_player` and `right_player` are needed in case we need to borrow resources from them, in which case, they
     /// will have the cost credited to them.
     pub fn do_action(
-            &mut self,
-            action: &Action,
-            visible_game: &VisibleGame,
-            left_player: &mut Player,
-            right_player: &mut Player,
-            discard_pile: &mut Vec<Card>) -> bool {
-
+        &mut self,
+        action: &Action,
+        visible_game: &VisibleGame,
+        left_player: &mut Player,
+        right_player: &mut Player,
+        discard_pile: &mut Vec<Card>,
+    ) -> bool {
         // Removes and returns the given card from the player's hand.
         fn remove_from_hand(hand: &mut Vec<Card>, card: &Card) -> Card {
             let index = hand.iter().position(|c| c == card).unwrap();
@@ -118,7 +117,6 @@ impl Player {
         science_items_count.insert(ScienceItem::Cog, 0);
         science_items_count.insert(ScienceItem::Tablet, 0);
 
-
         for card in colour_cards.iter() {
             if let Power::Science(science_items) = card.power() {
                 for science_item in science_items.iter() {
@@ -128,15 +126,14 @@ impl Player {
             }
         }
 
-        let score_for_sets_of_identical_symbols: f32 = science_items_count.iter()
+        let score_for_sets_of_identical_symbols: f32 = science_items_count
+            .iter()
             .filter(|(_, count)| **count > 0)
-            .map(|(_, count)| {
-                (*count as f32).powf(2f32)
-            })
+            .map(|(_, count)| (*count as f32).powf(2f32))
             .sum();
 
-        let score_for_all_symbol_groups: f32 =  7f32 * 
-            *science_items_count.iter().min_by_key(|(_, count)| *count).unwrap().1 as f32;
+        let score_for_all_symbol_groups: f32 =
+            7f32 * *science_items_count.iter().min_by_key(|(_, count)| *count).unwrap().1 as f32;
 
         score_for_all_symbol_groups + score_for_sets_of_identical_symbols
     }
@@ -157,7 +154,8 @@ impl Player {
             colour_structures.push(*structure)
         }
 
-        colour_to_structure.iter()
+        colour_to_structure
+            .iter()
             .map(|colour_entry| Self::evaluate_colour(colour_entry.1))
             .sum()
     }
@@ -233,18 +231,20 @@ impl Player {
         /// are removed entirely. Cards that provide options of resources are reduced to only those resources we
         /// require.
         fn add_choices(
-                cards: &[Card],
-                required_resources: &Resources,
-                source: Source,
-                choices: &mut Vec<UsableResources>) {
+            cards: &[Card],
+            required_resources: &Resources,
+            source: Source,
+            choices: &mut Vec<UsableResources>,
+        ) {
             for card in cards {
                 match (card.power(), source) {
                     // Make sure we only borrow brown and grey cards from neighbours (not yellow).
-                    (Power::Producer(resource_options), Source::Own) |
-                    (Power::PurchasableProducer(resource_options), _) => {
+                    (Power::Producer(resource_options), Source::Own)
+                    | (Power::PurchasableProducer(resource_options), _) => {
                         // Filter out single choice own cards as we'll have already dealt with these.
                         if source != Source::Own || resource_options.len() > 1 {
-                            let resources: Vec<Resources> = resource_options.iter()
+                            let resources: Vec<Resources> = resource_options
+                                .iter()
                                 .filter(|r| r.has(required_resources))
                                 .cloned()
                                 .collect();
@@ -257,11 +257,16 @@ impl Player {
                                         card: *card,
                                         index: i as u32,
                                         resources: vec![resources[0].split()],
-                                        source
+                                        source,
                                     });
                                 }
                             } else if !resources.is_empty() {
-                                choices.push(UsableResources { card: *card, index: 0, resources, source });
+                                choices.push(UsableResources {
+                                    card: *card,
+                                    index: 0,
+                                    resources,
+                                    source,
+                                });
                             }
                         }
                     }
@@ -284,7 +289,9 @@ impl Player {
         }
         if required_resources.satisfied() {
             // Can afford with own resources.
-            return ActionOptions { actions: vec![Action::Build(*card, Borrowing::no_borrowing())] }
+            return ActionOptions {
+                actions: vec![Action::Build(*card, Borrowing::no_borrowing())],
+            };
         }
 
         // We now add all choice cards owned by the player, and all borrowable resources owned by their neighbours, and
@@ -293,9 +300,17 @@ impl Player {
         let mut choices = vec![];
         add_choices(&self.built_structures, &required_resources, Source::Own, &mut choices);
         add_choices(
-            &visible_game.left_neighbour().built_structures, &required_resources, Source::LeftNeighbour, &mut choices);
+            &visible_game.left_neighbour().built_structures,
+            &required_resources,
+            Source::LeftNeighbour,
+            &mut choices,
+        );
         add_choices(
-            &visible_game.right_neighbour().built_structures, &required_resources, Source::RightNeighbour, &mut choices);
+            &visible_game.right_neighbour().built_structures,
+            &required_resources,
+            Source::RightNeighbour,
+            &mut choices,
+        );
 
         let mut actions = vec![];
         if !choices.is_empty() {
@@ -322,11 +337,10 @@ impl Player {
                     let index = (c % len as u32) as usize;
                     if choice.source == Source::Own {
                         r -= &choice.resources[index];
-
                     } else if index > 0 {
                         // TODO: cost of borrowing needs to vary depending on yellow cards.
                         if r.coins <= -2 {
-                            if r.not_needed(&choice.resources[index-1]) {
+                            if r.not_needed(&choice.resources[index - 1]) {
                                 // We already have enough of whatever this option provides. Therefore, this particular
                                 // combination is not valid. Skip to the next.
                                 continue 'outer;
@@ -388,7 +402,13 @@ mod tests {
     fn options_for_card_returns_nothing_if_insufficient_resources() {
         // Stockade requires 1 wood, we have 1 ore (starting resource).
         let player = new_player(vec![]);
-        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&players())).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&Stockade, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -396,28 +416,52 @@ mod tests {
         // Tree farm requires 1 coin, which we don't have.
         let mut player = new_player(vec![]);
         player.coins = 0;
-        assert_eq!(0, player.options_for_card(&TreeFarm, &visible_game(&players())).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&TreeFarm, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
     fn options_for_card_returns_one_option_if_sufficient_resources() {
         // Barracks requires 1 ore, which we have (starting resource).
         let player = new_player(vec![]);
-        assert_eq!(1, player.options_for_card(&Barracks, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Barracks, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
     fn options_for_card_returns_one_option_if_sufficient_coins() {
         // Tree farm requires 1 coin, which we have (starting coins).
         let player = new_player(vec![]);
-        assert_eq!(1, player.options_for_card(&TreeFarm, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&TreeFarm, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
     fn options_for_card_returns_one_option_if_free() {
         // Lumber yard is free.
         let player = new_player(vec![]);
-        assert_eq!(1, player.options_for_card(&LumberYard, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&LumberYard, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -425,7 +469,13 @@ mod tests {
         // Stockade requires 1 wood. Tree farm provides wood or clay.
         let mut player = new_player(vec![TreeFarm]);
         build(&mut player, TreeFarm);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Stockade, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -434,7 +484,13 @@ mod tests {
         let mut player = new_player(vec![TreeFarm, Glassworks1]);
         build(&mut player, TreeFarm);
         build(&mut player, Glassworks1);
-        assert_eq!(0, player.options_for_card(&Temple, &visible_game(&players())).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&Temple, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -443,7 +499,13 @@ mod tests {
         let mut player = new_player(vec![LumberYard, TreeFarm]);
         build(&mut player, LumberYard);
         build(&mut player, TreeFarm);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Stockade, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -452,7 +514,13 @@ mod tests {
         let mut player = new_player(vec![LumberYard, TreeFarm]);
         build(&mut player, LumberYard);
         build(&mut player, TreeFarm);
-        assert_eq!(1, player.options_for_card(&Caravansery, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Caravansery, &visible_game(&players()))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -460,7 +528,13 @@ mod tests {
         // Stockade requires 1 wood, we can borrow from a neighbour.
         let player = new_player(vec![]);
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -469,7 +543,13 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 1;
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -478,7 +558,13 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 3;
         let public_players = players_with_resources(vec![LumberYard, TreeFarm], vec![]);
-        assert_eq!(0, player.options_for_card(&Caravansery, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&Caravansery, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -487,7 +573,13 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 3;
         let public_players = players_with_resources(vec![Sawmill], vec![]);
-        assert_eq!(0, player.options_for_card(&Caravansery, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&Caravansery, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -495,7 +587,13 @@ mod tests {
         // Stockade requires 1 wood, we can borrow from either neighbour.
         let player = new_player(vec![]);
         let public_players = players_with_resources(vec![LumberYard], vec![TreeFarm]);
-        assert_eq!(2, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            2,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -504,7 +602,13 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 4;
         let public_players = players_with_resources(vec![LumberYard], vec![TreeFarm]);
-        assert_eq!(1, player.options_for_card(&Caravansery, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Caravansery, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -514,7 +618,13 @@ mod tests {
         let mut player = new_player(vec![TreeFarm]);
         build(&mut player, TreeFarm);
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -524,7 +634,13 @@ mod tests {
         let mut player = new_player(vec![]);
         player.coins = 4;
         let public_players = players_with_resources(vec![LumberYard, StonePit], vec![]);
-        assert_eq!(1, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -538,7 +654,13 @@ mod tests {
         build(&mut player, Press1);
         player.coins = 4;
         let public_players = players_with_resources(vec![ClayPit, Brickyard], vec![ClayPool]);
-        assert_eq!(6, player.options_for_card(&Laboratory, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            6,
+            player
+                .options_for_card(&Laboratory, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -551,7 +673,13 @@ mod tests {
         build(&mut player, ClayPit);
         player.coins = 4;
         let public_players = players_with_resources(vec![Quarry], vec![]);
-        assert_eq!(1, player.options_for_card(&Aqueduct, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Aqueduct, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -559,7 +687,13 @@ mod tests {
         // Stockade requires 1 wood. Our neighbour has a caravansery, which produces wood, but it is not borrowable.
         let player = new_player(vec![]);
         let public_players = players_with_resources(vec![Caravansery], vec![]);
-        assert_eq!(0, player.options_for_card(&Stockade, &visible_game(&public_players)).actions.len());
+        assert_eq!(
+            0,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players))
+                .actions
+                .len()
+        );
     }
 
     #[test]
@@ -568,19 +702,34 @@ mod tests {
         let mut player = new_player(vec![Sawmill, Caravansery]);
         build(&mut player, Sawmill);
         build(&mut player, Caravansery);
-        assert_eq!(1, player.options_for_card(&Baths, &visible_game(&players())).actions.len());
+        assert_eq!(
+            1,
+            player.options_for_card(&Baths, &visible_game(&players())).actions.len()
+        );
     }
 
     #[test]
     fn can_play_returns_false_if_player_does_not_have_card() {
         let player = new_player(vec![LumberYard]);
-        assert_eq!(false, player.can_play(&Action::Build(StonePit, Borrowing::no_borrowing()), &visible_game(&players())));
+        assert_eq!(
+            false,
+            player.can_play(
+                &Action::Build(StonePit, Borrowing::no_borrowing()),
+                &visible_game(&players())
+            )
+        );
     }
 
     #[test]
     fn can_play_returns_true_if_player_does_have_card_and_card_is_playable() {
         let player = new_player(vec![LumberYard]);
-        assert_eq!(true, player.can_play(&Action::Build(LumberYard, Borrowing::no_borrowing()), &visible_game(&players())));
+        assert_eq!(
+            true,
+            player.can_play(
+                &Action::Build(LumberYard, Borrowing::no_borrowing()),
+                &visible_game(&players())
+            )
+        );
     }
 
     #[test]
@@ -588,14 +737,23 @@ mod tests {
         // Stockade requires 1 wood, we *can* borrow from a neighbour, but our action says we're not doing any borrowing.
         let player = new_player(vec![Stockade]);
         let public_players = players_with_resources(vec![LumberYard], vec![]);
-        assert_eq!(false, player.can_play(&Action::Build(Stockade, Borrowing::no_borrowing()), &visible_game(&public_players)));
+        assert_eq!(
+            false,
+            player.can_play(
+                &Action::Build(Stockade, Borrowing::no_borrowing()),
+                &visible_game(&public_players)
+            )
+        );
     }
 
     #[test]
     fn strength_returns_sum_of_card_strengths() {
         assert_eq!(0.0, Player::strength_internal(&vec![StonePit]));
         assert_eq!(5.0, Player::strength_internal(&vec![StonePit, Quarry, Aqueduct]));
-        assert_eq!(6.0, Player::strength_internal(&vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary]));
+        assert_eq!(
+            6.0,
+            Player::strength_internal(&vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary])
+        );
     }
 
     #[test]
@@ -604,7 +762,10 @@ mod tests {
         assert_eq!(4.0, Player::strength_internal(&vec![Lodge, Apothecary]));
         assert_eq!(9.0, Player::strength_internal(&vec![Lodge, Apothecary, Dispensary]));
         assert_eq!(10.0, Player::strength_internal(&vec![Lodge, Workshop, Library]));
-        assert_eq!(21.0, Player::strength_internal(&vec![Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library]));  // rulebook example
+        assert_eq!(
+            21.0,
+            Player::strength_internal(&vec![Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library])
+        ); // rulebook example
     }
 
     #[test]
@@ -636,7 +797,16 @@ mod tests {
         let mut player = new_player(vec![LumberYard]);
         let mut discard_pile = vec![];
         assert_eq!(1, player.hand.len());
-        assert_eq!(true, player.do_action(&Action::Discard(LumberYard), &visible_game(&players()), &mut new_player(vec![]), &mut new_player(vec![]), &mut discard_pile));
+        assert_eq!(
+            true,
+            player.do_action(
+                &Action::Discard(LumberYard),
+                &visible_game(&players()),
+                &mut new_player(vec![]),
+                &mut new_player(vec![]),
+                &mut discard_pile
+            )
+        );
         assert_eq!(1, discard_pile.len());
         assert_eq!(0, player.hand.len());
     }
@@ -645,7 +815,16 @@ mod tests {
     fn do_action_adds_three_coins_when_discarding() {
         let mut player = new_player(vec![LumberYard]);
         assert_eq!(3, player.coins);
-        assert_eq!(true, player.do_action(&Action::Discard(LumberYard), &visible_game(&players()), &mut new_player(vec![]), &mut new_player(vec![]), &mut vec![]));
+        assert_eq!(
+            true,
+            player.do_action(
+                &Action::Discard(LumberYard),
+                &visible_game(&players()),
+                &mut new_player(vec![]),
+                &mut new_player(vec![]),
+                &mut vec![]
+            )
+        );
         assert_eq!(6, player.coins);
     }
 
@@ -665,7 +844,10 @@ mod tests {
     }
 
     fn visible_game(players: &Vec<PublicPlayer>) -> VisibleGame {
-        VisibleGame { players, player_index: 1 }
+        VisibleGame {
+            players,
+            player_index: 1,
+        }
     }
 
     fn players() -> Vec<PublicPlayer> {
@@ -675,23 +857,32 @@ mod tests {
     fn players_with_resources(left: Vec<Card>, right: Vec<Card>) -> Vec<PublicPlayer> {
         vec![
             PublicPlayer {
-                wonder: WonderBoard { wonder_type: WonderType::ColossusOfRhodes, wonder_side: WonderSide::A },
+                wonder: WonderBoard {
+                    wonder_type: WonderType::ColossusOfRhodes,
+                    wonder_side: WonderSide::A,
+                },
                 built_structures: right,
-                coins: 0
+                coins: 0,
             },
             PublicPlayer {
-                wonder: WonderBoard { wonder_type: WonderType::LighthouseOfAlexandria, wonder_side: WonderSide::A },
+                wonder: WonderBoard {
+                    wonder_type: WonderType::LighthouseOfAlexandria,
+                    wonder_side: WonderSide::A,
+                },
                 built_structures: vec![],
-                coins: 0
+                coins: 0,
             },
             PublicPlayer {
-                wonder: WonderBoard { wonder_type: WonderType::TempleOfArtemis, wonder_side: WonderSide::A },
+                wonder: WonderBoard {
+                    wonder_type: WonderType::TempleOfArtemis,
+                    wonder_side: WonderSide::A,
+                },
                 built_structures: left,
-                coins: 0
+                coins: 0,
             },
         ]
     }
-    
+
     fn build(player: &mut Player, card: Card) -> bool {
         let mut left_neighbour = new_player(vec![]);
         let mut right_neighbour = new_player(vec![]);
@@ -700,6 +891,7 @@ mod tests {
             &visible_game(&players()),
             &mut left_neighbour,
             &mut right_neighbour,
-            &mut vec![])
+            &mut vec![],
+        )
     }
 }

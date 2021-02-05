@@ -3,11 +3,11 @@
 use std::io;
 use std::io::Write;
 
+use crate::action::{Action, ActionOptions, Borrowing};
 use crate::algorithms::PlayingAlgorithm;
 use crate::game::VisibleGame;
 use crate::player::Player;
 use crate::table::Table;
-use crate::action::{Action, Borrowing, ActionOptions};
 use itertools::Itertools;
 
 #[derive(Debug)]
@@ -26,15 +26,23 @@ impl Human {
             let other_player = &all_players[index];
 
             let mut played = Table::new(vec![String::from("Card"), String::from("Power")]);
-            other_player.built_structures.iter()
+            other_player
+                .built_structures
+                .iter()
                 .map(|card| vec![card.to_string(), card.power().to_string()])
                 .for_each(|row| played.add(row));
 
-            println!("Player {}{}", index + 1, if index == player_index { " (you)" } else { "" });
-            println!("  Wonder: {} (side {:?}). Starting resource: {}",
-                     other_player.wonder.wonder_type.name(),
-                     other_player.wonder.wonder_side,
-                     other_player.wonder.starting_resource());
+            println!(
+                "Player {}{}",
+                index + 1,
+                if index == player_index { " (you)" } else { "" }
+            );
+            println!(
+                "  Wonder: {} (side {:?}). Starting resource: {}",
+                other_player.wonder.wonder_type.name(),
+                other_player.wonder.wonder_side,
+                other_player.wonder.starting_resource()
+            );
             println!("  Coins: {}", other_player.coins);
             if !other_player.built_structures.is_empty() {
                 played.print("  ", 4);
@@ -42,8 +50,16 @@ impl Human {
             println!();
         }
 
-        let mut hand = Table::new(vec![String::from("Num"), String::from("Card"), String::from("Cost"), String::from("Power")]);
-        player.hand().iter().enumerate()
+        let mut hand = Table::new(vec![
+            String::from("Num"),
+            String::from("Card"),
+            String::from("Cost"),
+            String::from("Power"),
+        ]);
+        player
+            .hand()
+            .iter()
+            .enumerate()
             .map(|(i, card)| {
                 let options = player.options_for_card(card, visible_game);
                 let playability = if !options.possible() {
@@ -57,7 +73,7 @@ impl Human {
                     playability.to_string() + &(i + 1).to_string(),
                     card.to_string(),
                     card.cost().to_string(),
-                    card.power().to_string()
+                    card.power().to_string(),
                 ]
             })
             .for_each(|row| hand.add(row));
@@ -96,7 +112,7 @@ impl Human {
                         let options = player.options_for_card(&card, visible_game);
                         if options.own_cards_only() || !options.possible() {
                             // Use own cards, or action not possible (which is caught later).
-                            break Action::Build(card, Borrowing::no_borrowing())
+                            break Action::Build(card, Borrowing::no_borrowing());
                         } else if options.actions.len() == 1 {
                             // Borrowing, but only one option, so just do it.
                             break options.actions[0].clone();
@@ -108,13 +124,14 @@ impl Human {
                                 &options,
                                 visible_game.left_neighbour_index(),
                                 visible_game.right_neighbour_index(),
-                                &mut io::stdout());
+                                &mut io::stdout(),
+                            );
                             print!("Please enter the id of the borrow you want to make: ");
                             break 'outer Self::choose_from_slice(&options.actions).clone();
                         }
-                    },
+                    }
                     "d" => break Action::Discard(card),
-                    _ => {},
+                    _ => {}
                 };
                 print!("Please enter either b or d: ");
             };
@@ -133,7 +150,7 @@ impl Human {
     /// Asks the user to choose one of the items in the given slice.
     fn choose_from_slice<T>(slice: &[T]) -> &T {
         loop {
-            io::stdout().flush().unwrap();  // Needed so that print! (with no carriage return) flushes to the terminal.
+            io::stdout().flush().unwrap(); // Needed so that print! (with no carriage return) flushes to the terminal.
             let mut id = String::new();
             io::stdin().read_line(&mut id).unwrap();
             let id: usize = id.trim().parse().unwrap_or(0);
@@ -146,22 +163,27 @@ impl Human {
 
     /// Prints the borrowing options the user has available to them.
     fn print_borrowing_options<W: Write>(
-            options: &ActionOptions,
-            left_neighbour_index: usize,
-            right_neighbour_index: usize,
-            out: &mut W) {
+        options: &ActionOptions,
+        left_neighbour_index: usize,
+        right_neighbour_index: usize,
+        out: &mut W,
+    ) {
         for (index, option) in options.actions.iter().enumerate() {
             if let Action::Build(_, borrowing) = option {
                 let mut borrows = vec![];
                 if !borrowing.left.is_empty() {
-                    borrows.push(format!("{} from player {}", borrowing.left.iter()
-                        .map(|borrow| borrow.card)
-                        .format(", "), left_neighbour_index + 1));
+                    borrows.push(format!(
+                        "{} from player {}",
+                        borrowing.left.iter().map(|borrow| borrow.card).format(", "),
+                        left_neighbour_index + 1
+                    ));
                 }
                 if !borrowing.right.is_empty() {
-                    borrows.push(format!("{} from player {}", borrowing.right.iter()
-                        .map(|borrow| borrow.card)
-                        .format(", "), right_neighbour_index + 1));
+                    borrows.push(format!(
+                        "{} from player {}",
+                        borrowing.right.iter().map(|borrow| borrow.card).format(", "),
+                        right_neighbour_index + 1
+                    ));
                 }
                 writeln!(out, "   {}) Borrow {}", index + 1, borrows.iter().format(" and ")).unwrap();
             }
@@ -178,45 +200,74 @@ impl PlayingAlgorithm for Human {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::card::Card;
     use crate::action::Borrow;
+    use crate::card::Card;
 
     #[test]
     fn print_borrowing_options_with_single_borrow() {
         let mut out: Vec<u8> = Vec::new();
-        let actions = vec![Action::Build(Card::Baths, Borrowing::new(vec![Borrow::new(Card::StonePit, 0)], vec![]))];
+        let actions = vec![Action::Build(
+            Card::Baths,
+            Borrowing::new(vec![Borrow::new(Card::StonePit, 0)], vec![]),
+        )];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
-        assert_eq!(String::from_utf8(out).unwrap(), "   1) Borrow Stone Pit from player 3\n");
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "   1) Borrow Stone Pit from player 3\n"
+        );
     }
 
     #[test]
     fn print_borrowing_options_with_two_borrows_from_same_neighbour() {
         let mut out: Vec<u8> = Vec::new();
-        let actions = vec![Action::Build(Card::Temple, Borrowing::new(
-            vec![], vec![Borrow::new(Card::LumberYard, 0), Borrow::new(Card::ClayPool, 0)]
-        ))];
+        let actions = vec![Action::Build(
+            Card::Temple,
+            Borrowing::new(
+                vec![],
+                vec![Borrow::new(Card::LumberYard, 0), Borrow::new(Card::ClayPool, 0)],
+            ),
+        )];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
-        assert_eq!(String::from_utf8(out).unwrap(), "   1) Borrow Lumber Yard, Clay Pool from player 1\n");
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "   1) Borrow Lumber Yard, Clay Pool from player 1\n"
+        );
     }
 
     #[test]
     fn print_borrowing_options_with_one_borrow_from_each_neighbour() {
         let mut out: Vec<u8> = Vec::new();
-        let actions = vec![Action::Build(Card::Temple, Borrowing::new(
-            vec![Borrow::new(Card::LumberYard, 0)], vec![Borrow::new(Card::ClayPool, 0)]
-        ))];
+        let actions = vec![Action::Build(
+            Card::Temple,
+            Borrowing::new(
+                vec![Borrow::new(Card::LumberYard, 0)],
+                vec![Borrow::new(Card::ClayPool, 0)],
+            ),
+        )];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
-        assert_eq!(String::from_utf8(out).unwrap(), "   1) Borrow Lumber Yard from player 3 and Clay Pool from player 1\n");
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "   1) Borrow Lumber Yard from player 3 and Clay Pool from player 1\n"
+        );
     }
 
     #[test]
     fn print_borrowing_options_with_two_options() {
         let mut out: Vec<u8> = Vec::new();
         let actions = vec![
-            Action::Build(Card::Baths, Borrowing::new(vec![Borrow::new(Card::StonePit, 0)], vec![])),
-            Action::Build(Card::Baths, Borrowing::new(vec![Borrow::new(Card::Excavation, 0)], vec![])),
+            Action::Build(
+                Card::Baths,
+                Borrowing::new(vec![Borrow::new(Card::StonePit, 0)], vec![]),
+            ),
+            Action::Build(
+                Card::Baths,
+                Borrowing::new(vec![Borrow::new(Card::Excavation, 0)], vec![]),
+            ),
         ];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
-        assert_eq!(String::from_utf8(out).unwrap(), "   1) Borrow Stone Pit from player 3\n   2) Borrow Excavation from player 3\n");
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "   1) Borrow Stone Pit from player 3\n   2) Borrow Excavation from player 3\n"
+        );
     }
 }

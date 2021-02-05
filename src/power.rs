@@ -51,37 +51,46 @@ impl Power {
     /// Returns a [`Power`] that awards one coin and one victory point per yellow card built by the player only (not his
     /// neighbours) -- in other words, the power of the [`Card::Lighthouse`].
     pub fn per_card_reward(
-                colour: Colour,
-                me: bool,
-                neighbours: bool,
-                coins_per_thing: u32,
-                points_per_thing: u32) -> Power {
-
+        colour: Colour,
+        me: bool,
+        neighbours: bool,
+        coins_per_thing: u32,
+        points_per_thing: u32,
+    ) -> Power {
         Power::PerGameItemRewards(vec![PerGameItemReward {
-            game_item: Box::new(move |game_item| matches!(game_item,
-                    CountableGameItem::CountableCard(card) if card.colour() == colour)),
+            game_item: Box::new(move |game_item| {
+                matches!(game_item,
+                    CountableGameItem::CountableCard(card) if card.colour() == colour)
+            }),
             me,
             neighbours,
             coins_per_thing,
-            points_per_thing
+            points_per_thing,
         }])
     }
 }
 
 impl Display for Power {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            Power::PurchasableProducer(resources) => format!("{}", resources.iter().format(" or ")),
-            Power::Producer(resources) => format!("{}", resources.iter().format(" or ")),
-            Power::VictoryPoints(points) => plural(*points as i32, "VP"),
-            Power::Coins(coins) => plural(*coins as i32, "coin"),
-            Power::BuyBrownAntiClockwise => "Buy brown cards for 1 coin anti-clockwise".to_string(),
-            Power::BuyBrownClockwise => "Buy brown cards for 1 coin clockwise".to_string(),
-            Power::BuyGrey => "Buy grey cards for 1 coin".to_string(),
-            Power::Science(symbol) => format!("{}", symbol.iter().map(|symbol| format!("{} symbol", symbol)).format(" or ")),
-            Power::Shields(shields) => plural(*shields as i32, "shield"),
-            Power::PerGameItemRewards(_) => "Per game item thing (TODO)".to_string()  // TODO
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Power::PurchasableProducer(resources) => format!("{}", resources.iter().format(" or ")),
+                Power::Producer(resources) => format!("{}", resources.iter().format(" or ")),
+                Power::VictoryPoints(points) => plural(*points as i32, "VP"),
+                Power::Coins(coins) => plural(*coins as i32, "coin"),
+                Power::BuyBrownAntiClockwise => "Buy brown cards for 1 coin anti-clockwise".to_string(),
+                Power::BuyBrownClockwise => "Buy brown cards for 1 coin clockwise".to_string(),
+                Power::BuyGrey => "Buy grey cards for 1 coin".to_string(),
+                Power::Science(symbol) => format!(
+                    "{}",
+                    symbol.iter().map(|symbol| format!("{} symbol", symbol)).format(" or ")
+                ),
+                Power::Shields(shields) => plural(*shields as i32, "shield"),
+                Power::PerGameItemRewards(_) => "Per game item thing (TODO)".to_string(), // TODO
+            }
+        )
     }
 }
 
@@ -90,16 +99,20 @@ impl Display for Power {
 pub enum ScienceItem {
     Compass,
     Cog,
-    Tablet
+    Tablet,
 }
 
 impl Display for ScienceItem {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            ScienceItem::Compass => "Compass",
-            ScienceItem::Cog => "Cog",
-            ScienceItem::Tablet => "Tablet"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                ScienceItem::Compass => "Compass",
+                ScienceItem::Cog => "Cog",
+                ScienceItem::Tablet => "Tablet",
+            }
+        )
     }
 }
 
@@ -114,7 +127,7 @@ pub struct PerGameItemReward {
     /// True if the player's neighbours' items should be counted.
     pub neighbours: bool,
     pub coins_per_thing: u32,
-    pub points_per_thing: u32
+    pub points_per_thing: u32,
 }
 
 /// Something in the game that is "countable", such as the number of cards a player has built, or the number of Defeat
