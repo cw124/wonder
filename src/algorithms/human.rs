@@ -44,7 +44,22 @@ impl Human {
 
         let mut hand = Table::new(vec![String::from("Num"), String::from("Card"), String::from("Cost"), String::from("Power")]);
         player.hand().iter().enumerate()
-            .map(|(i, card)| vec![(i + 1).to_string(), card.to_string(), card.cost().to_string(), card.power().to_string()])
+            .map(|(i, card)| {
+                let options = player.options_for_card(card, visible_game);
+                let playability = if !options.possible() {
+                    "  "
+                } else if options.own_cards_only() {
+                    "* "
+                } else {
+                    "# "
+                };
+                vec![
+                    playability.to_string() + &(i + 1).to_string(),
+                    card.to_string(),
+                    card.cost().to_string(),
+                    card.power().to_string()
+                ]
+            })
             .for_each(|row| hand.add(row));
 
         println!("Your hand:");
