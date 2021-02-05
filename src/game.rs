@@ -4,11 +4,11 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
 
+use crate::algorithms::PlayingAlgorithm;
 use crate::card;
 use crate::card::{Age, Card};
 use crate::player::{Player, PublicPlayer};
 use crate::wonder::{WonderSide, WonderType};
-use crate::algorithms::PlayingAlgorithm;
 
 /// Represents the whole game state.
 #[derive(Debug)]
@@ -44,7 +44,8 @@ impl Game {
         wonder_types.shuffle(&mut thread_rng());
 
         // For each player, pick a random wonder and deal seven random cards.
-        let players: Vec<Player> = algorithms.into_iter()
+        let players: Vec<Player> = algorithms
+            .into_iter()
             .zip(wonder_types)
             .map(|(algorithm, wonder_type)| Player::new(wonder_type, WonderSide::A, algorithm))
             .collect();
@@ -52,7 +53,7 @@ impl Game {
         Game {
             players,
             turn: 0,
-            discard_pile: vec![]
+            discard_pile: vec![],
         }
     }
 
@@ -71,15 +72,22 @@ impl Game {
 
         // Do actions. public_players is an immutable snapshot of the game state before players start moving, so
         // that each moves "simultaneously".
-        let public_players: Vec<PublicPlayer> = self.players.iter()
-            .map(|player| PublicPlayer::new(&player))
-            .collect();
+        let public_players: Vec<PublicPlayer> = self.players.iter().map(|player| PublicPlayer::new(&player)).collect();
         for index in 0..self.players.len() {
             let (mut right_player, player, mut left_player) =
                 Self::get_mutable_player_and_neighbours(&mut self.players, index);
-            let visible_game = VisibleGame { players: &public_players, player_index: index };
+            let visible_game = VisibleGame {
+                players: &public_players,
+                player_index: index,
+            };
             let action = player.algorithm().get_next_action(&player, &visible_game);
-            player.do_action(&action, &visible_game, &mut left_player, &mut right_player, &mut self.discard_pile);
+            player.do_action(
+                &action,
+                &visible_game,
+                &mut left_player,
+                &mut right_player,
+                &mut self.discard_pile,
+            );
         }
 
         // Pass cards.
@@ -109,28 +117,28 @@ impl Game {
             0..=5 => Age::First,
             6..=11 => Age::Second,
             12..=17 => Age::Third,
-            _ => panic!("Unknown turn!")
+            _ => panic!("Unknown turn!"),
         }
     }
 
     /// Given the index of a player, returns a mutable borrow of that player, as well as the left and right neighbours
     /// of the player. This is super-horrible in Rust as far as I can tell. Perhaps there's a better way...
-    fn get_mutable_player_and_neighbours(players: &mut Vec<Player>, index: usize)
-            -> (&mut Player, &mut Player, &mut Player) {
+    fn get_mutable_player_and_neighbours(
+        players: &mut Vec<Player>,
+        index: usize,
+    ) -> (&mut Player, &mut Player, &mut Player) {
         if index == 0 {
             // player=0, left=1, right=n
             let (player, after) = players.split_first_mut().unwrap();
             let (right_player, rest) = after.split_last_mut().unwrap();
             let (left_player, _) = rest.split_first_mut().unwrap();
             (right_player, player, left_player)
-
         } else if index == players.len() - 1 {
             // player=n, left=0, right=n-1
             let (player, before) = players.split_last_mut().unwrap();
             let (left_player, rest) = before.split_first_mut().unwrap();
             let (right_player, _) = rest.split_last_mut().unwrap();
             (right_player, player, left_player)
-
         } else {
             // player=i, left=i+1, right=i-1
             let (before, player_and_after) = players.split_at_mut(index);
@@ -174,8 +182,8 @@ impl<'a> VisibleGame<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::algorithms::random::Random;
     use crate::action::Action;
+    use crate::algorithms::random::Random;
 
     #[test]
     #[should_panic(expected = "Must have at least three players")]
@@ -200,7 +208,10 @@ mod tests {
 
     #[test]
     fn new_game_has_correct_number_of_players() {
-        assert_eq!(3, Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]).player_count());
+        assert_eq!(
+            3,
+            Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})]).player_count()
+        );
     }
 
     #[test]
@@ -245,7 +256,8 @@ mod tests {
         let mut game = Game::new(vec![
             Box::new(AlwaysDiscards {}),
             Box::new(AlwaysDiscards {}),
-            Box::new(AlwaysDiscards {})]);
+            Box::new(AlwaysDiscards {}),
+        ]);
 
         // We have to do an initial turn so the first age cards are dealt to the players. Before this, nobody has any
         // cards!
@@ -257,9 +269,9 @@ mod tests {
 
         game.do_turn();
 
-        assert_eq!(game.players[1].hand()[..], player0[..player0.len()-1]);
-        assert_eq!(game.players[2].hand()[..], player1[..player0.len()-1]);
-        assert_eq!(game.players[0].hand()[..], player2[..player0.len()-1]);
+        assert_eq!(game.players[1].hand()[..], player0[..player0.len() - 1]);
+        assert_eq!(game.players[2].hand()[..], player1[..player0.len() - 1]);
+        assert_eq!(game.players[0].hand()[..], player2[..player0.len() - 1]);
     }
 
     #[test]
@@ -296,7 +308,7 @@ mod tests {
             //  player::do_action uses Vec::swap_remove). Ideally don't rely on the implementation of do_action. But
             //  that involves sorting the hands in order to compare them, which is painful (at least with my current
             //  Rust skills).
-            Action::Discard(player.hand()[player.hand().len()-1])
+            Action::Discard(player.hand()[player.hand().len() - 1])
         }
     }
 }

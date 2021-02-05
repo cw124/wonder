@@ -1,17 +1,17 @@
-use crate::game::Game;
 use crate::algorithms::human::Human;
 use crate::algorithms::random::Random;
+use crate::game::Game;
 
+mod action;
+mod algorithms;
 mod card;
-mod wonder;
+mod game;
+mod player;
 mod power;
 mod resources;
-mod player;
-mod game;
-mod utils;
 mod table;
-mod algorithms;
-mod action;
+mod utils;
+mod wonder;
 
 fn main() {
     let mut game = Game::new(vec![Box::new(Human {}), Box::new(Random {}), Box::new(Random {})]);

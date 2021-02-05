@@ -9,12 +9,13 @@ impl Table {
     /// Creates a new [Table]. Each column will have the given header text.
     pub fn new(header: Vec<String>) -> Table {
         let num_columns = header.len();
-        let underlines = header.iter()
+        let underlines = header
+            .iter()
             .map(|column_title| "=".repeat(column_title.len()))
             .collect();
         Table {
             rows: vec![header, underlines],
-            num_columns
+            num_columns,
         }
     }
 
@@ -29,14 +30,16 @@ impl Table {
     /// Prints the table to stdout. Each line will be prefixed with the given string, and each column will be separated
     /// by the given amount of whitespace.
     pub fn print(&self, prefix: &str, column_spacing: u32) {
-        let widths: Vec<usize> = self.rows[0].iter().enumerate()
+        let widths: Vec<usize> = self.rows[0]
+            .iter()
+            .enumerate()
             .map(|(i, _)| self.rows.iter().map(|row| row[i].len()).max().unwrap_or(0) + column_spacing as usize)
             .collect();
 
         for row in &self.rows {
             print!("{}", prefix);
             for (i, cell) in row.iter().enumerate() {
-                print!("{:width$}", cell, width=widths[i])
+                print!("{:width$}", cell, width = widths[i])
             }
             println!();
         }

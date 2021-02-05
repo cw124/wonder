@@ -1,20 +1,19 @@
-use std::fmt::{Display, Formatter};
 use std::fmt;
+use std::fmt::{Display, Formatter};
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::power::{CountableGameItem, ScienceItem};
 use crate::power::PerGameItemReward;
 use crate::power::Power;
+use crate::power::{CountableGameItem, ScienceItem};
 use crate::resources::Resources;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, EnumIter)]
 #[allow(dead_code)]
 pub enum Card {
-
     // Age 1
     // =====
 
@@ -57,7 +56,6 @@ pub enum Card {
     Barracks,
     GuardTower,
 
-
     // Age 2
     // =====
 
@@ -95,7 +93,6 @@ pub enum Card {
     TrainingGround,
     Stables,
     ArcheryRange,
-
 
     // Age 3
     // =====
@@ -526,7 +523,12 @@ impl Card {
                 name: "Temple",
                 age: Age::Second,
                 players_needed: vec![3, 6],
-                cost: Resources { wood: 1, clay: 1, glass: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 1,
+                    clay: 1,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::Pantheon],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(3),
@@ -536,7 +538,11 @@ impl Card {
                 name: "Statue",
                 age: Age::Second,
                 players_needed: vec![3, 7],
-                cost: Resources { wood: 1, ore: 2, ..Default::default() },
+                cost: Resources {
+                    wood: 1,
+                    ore: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::Gardens],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(4),
@@ -546,7 +552,11 @@ impl Card {
                 name: "Courthouse",
                 age: Age::Second,
                 players_needed: vec![3, 5],
-                cost: Resources { clay: 2, loom: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 2,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(4),
@@ -573,7 +583,8 @@ impl Card {
                     Resources::wood(1),
                     Resources::stone(1),
                     Resources::ore(1),
-                    Resources::clay(1)]),
+                    Resources::clay(1),
+                ]),
             },
 
             Card::Vineyard => CardInfo {
@@ -600,7 +611,11 @@ impl Card {
                 name: "Dispensary",
                 age: Age::Second,
                 players_needed: vec![3, 4],
-                cost: Resources { ore: 2, glass: 1, ..Default::default() },
+                cost: Resources {
+                    ore: 2,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::Arena, Card::Lodge],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Compass]),
@@ -610,7 +625,11 @@ impl Card {
                 name: "Laboratory",
                 age: Age::Second,
                 players_needed: vec![3, 5],
-                cost: Resources { clay: 2, papyrus: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 2,
+                    papyrus: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::SiegeWorkshop, Card::Observatory],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Cog]),
@@ -620,7 +639,11 @@ impl Card {
                 name: "Library",
                 age: Age::Second,
                 players_needed: vec![3, 6],
-                cost: Resources { stone: 2, loom: 1, ..Default::default() },
+                cost: Resources {
+                    stone: 2,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::Senate, Card::University],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Tablet]),
@@ -630,7 +653,11 @@ impl Card {
                 name: "School",
                 age: Age::Second,
                 players_needed: vec![3, 7],
-                cost: Resources { wood: 1, papyrus: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 1,
+                    papyrus: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::Academy, Card::Study],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Tablet]),
@@ -650,7 +677,11 @@ impl Card {
                 name: "Training Ground",
                 age: Age::Second,
                 players_needed: vec![4, 6, 7],
-                cost: Resources { wood: 1, ore: 2, ..Default::default() },
+                cost: Resources {
+                    wood: 1,
+                    ore: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![Card::Circus],
                 colour: Colour::Red,
                 power: Power::Shields(2),
@@ -660,7 +691,12 @@ impl Card {
                 name: "Stables",
                 age: Age::Second,
                 players_needed: vec![3, 5],
-                cost: Resources { ore: 1, clay: 1, wood: 1, ..Default::default() },
+                cost: Resources {
+                    ore: 1,
+                    clay: 1,
+                    wood: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Red,
                 power: Power::Shields(2),
@@ -670,7 +706,11 @@ impl Card {
                 name: "Archery Range",
                 age: Age::Second,
                 players_needed: vec![3, 6],
-                cost: Resources { wood: 2, ore: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 2,
+                    ore: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Red,
                 power: Power::Shields(2),
@@ -680,7 +720,14 @@ impl Card {
                 name: "Pantheon",
                 age: Age::Third,
                 players_needed: vec![3, 6],
-                cost: Resources { clay: 2, ore: 1, papyrus: 1, loom: 1, glass: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 2,
+                    ore: 1,
+                    papyrus: 1,
+                    loom: 1,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(7),
@@ -690,7 +737,11 @@ impl Card {
                 name: "Gardens",
                 age: Age::Third,
                 players_needed: vec![3, 4],
-                cost: Resources { wood: 2, clay: 2, ..Default::default() },
+                cost: Resources {
+                    wood: 2,
+                    clay: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(5),
@@ -700,7 +751,12 @@ impl Card {
                 name: "Town Hall",
                 age: Age::Third,
                 players_needed: vec![3, 5, 6],
-                cost: Resources { glass: 1, ore: 1, stone: 2, ..Default::default() },
+                cost: Resources {
+                    glass: 1,
+                    ore: 1,
+                    stone: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(6),
@@ -710,7 +766,16 @@ impl Card {
                 name: "Palace",
                 age: Age::Third,
                 players_needed: vec![3, 7],
-                cost: Resources { glass: 1, papyrus: 1, loom: 1, clay: 1, wood: 1, ore: 1, stone: 1, coins: 0 },
+                cost: Resources {
+                    glass: 1,
+                    papyrus: 1,
+                    loom: 1,
+                    clay: 1,
+                    wood: 1,
+                    ore: 1,
+                    stone: 1,
+                    coins: 0,
+                },
                 chains_to: vec![],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(8),
@@ -720,7 +785,12 @@ impl Card {
                 name: "Senate",
                 age: Age::Third,
                 players_needed: vec![3, 5],
-                cost: Resources { ore: 1, stone: 1, wood: 2, ..Default::default() },
+                cost: Resources {
+                    ore: 1,
+                    stone: 1,
+                    wood: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Blue,
                 power: Power::VictoryPoints(6),
@@ -730,7 +800,12 @@ impl Card {
                 name: "Haven",
                 age: Age::Third,
                 players_needed: vec![3, 4],
-                cost: Resources { loom: 1, ore: 1, wood: 1, ..Default::default() },
+                cost: Resources {
+                    loom: 1,
+                    ore: 1,
+                    wood: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Yellow,
                 power: Power::per_card_reward(Colour::Brown, true, false, 1, 1),
@@ -740,7 +815,11 @@ impl Card {
                 name: "Lighthouse",
                 age: Age::Third,
                 players_needed: vec![3, 6],
-                cost: Resources { glass: 1, stone: 1, ..Default::default() },
+                cost: Resources {
+                    glass: 1,
+                    stone: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Yellow,
                 power: Power::per_card_reward(Colour::Yellow, true, false, 1, 1),
@@ -750,7 +829,11 @@ impl Card {
                 name: "Chamber Of Commerce",
                 age: Age::Third,
                 players_needed: vec![4, 6],
-                cost: Resources { clay: 2, papyrus: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 2,
+                    papyrus: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Yellow,
                 power: Power::per_card_reward(Colour::Grey, true, false, 2, 2),
@@ -760,7 +843,11 @@ impl Card {
                 name: "Arena",
                 age: Age::Third,
                 players_needed: vec![3, 5, 7],
-                cost: Resources { ore: 1, stone: 2, ..Default::default() },
+                cost: Resources {
+                    ore: 1,
+                    stone: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Yellow,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
@@ -776,7 +863,12 @@ impl Card {
                 name: "Lodge",
                 age: Age::Third,
                 players_needed: vec![3, 6],
-                cost: Resources { clay: 2, loom: 1, papyrus: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 2,
+                    loom: 1,
+                    papyrus: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Compass]),
@@ -786,7 +878,12 @@ impl Card {
                 name: "Observatory",
                 age: Age::Third,
                 players_needed: vec![3, 7],
-                cost: Resources { ore: 2, glass: 1, loom: 1, ..Default::default() },
+                cost: Resources {
+                    ore: 2,
+                    glass: 1,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Cog]),
@@ -796,7 +893,12 @@ impl Card {
                 name: "University",
                 age: Age::Third,
                 players_needed: vec![3, 4],
-                cost: Resources { wood: 2, papyrus: 1, glass: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 2,
+                    papyrus: 1,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Tablet]),
@@ -806,7 +908,11 @@ impl Card {
                 name: "Academy",
                 age: Age::Third,
                 players_needed: vec![3, 7],
-                cost: Resources { stone: 3, glass: 1, ..Default::default() },
+                cost: Resources {
+                    stone: 3,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Compass]),
@@ -816,7 +922,12 @@ impl Card {
                 name: "Study",
                 age: Age::Third,
                 players_needed: vec![3, 5],
-                cost: Resources { wood: 1, papyrus: 1, loom: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 1,
+                    papyrus: 1,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Green,
                 power: Power::Science(vec![ScienceItem::Cog]),
@@ -826,7 +937,11 @@ impl Card {
                 name: "Fortifications",
                 age: Age::Third,
                 players_needed: vec![3, 7],
-                cost: Resources { stone: 1, ore: 3, ..Default::default() },
+                cost: Resources {
+                    stone: 1,
+                    ore: 3,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Red,
                 power: Power::Shields(3),
@@ -836,7 +951,11 @@ impl Card {
                 name: "Circus",
                 age: Age::Third,
                 players_needed: vec![4, 5, 6],
-                cost: Resources { stone: 3, ore: 1, ..Default::default() },
+                cost: Resources {
+                    stone: 3,
+                    ore: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Red,
                 power: Power::Shields(3),
@@ -846,7 +965,12 @@ impl Card {
                 name: "Arsenal",
                 age: Age::Third,
                 players_needed: vec![3, 4, 7],
-                cost: Resources { ore: 1, wood: 2, loom: 1, ..Default::default() },
+                cost: Resources {
+                    ore: 1,
+                    wood: 2,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Red,
                 power: Power::Shields(3),
@@ -856,7 +980,11 @@ impl Card {
                 name: "Siege Workshop",
                 age: Age::Third,
                 players_needed: vec![3, 5],
-                cost: Resources { wood: 1, clay: 3, ..Default::default() },
+                cost: Resources {
+                    wood: 1,
+                    clay: 3,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Red,
                 power: Power::Shields(3),
@@ -866,7 +994,13 @@ impl Card {
                 name: "Workers Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { ore: 2, clay: 1, stone: 1, wood: 1, ..Default::default() },
+                cost: Resources {
+                    ore: 2,
+                    clay: 1,
+                    stone: 1,
+                    wood: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::per_card_reward(Colour::Brown, false, true, 0, 1),
@@ -876,7 +1010,11 @@ impl Card {
                 name: "Craftsmens Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { ore: 2, stone: 2, ..Default::default() },
+                cost: Resources {
+                    ore: 2,
+                    stone: 2,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::per_card_reward(Colour::Grey, false, true, 0, 2),
@@ -886,7 +1024,12 @@ impl Card {
                 name: "Traders Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { loom: 1, papyrus: 1, glass: 1, ..Default::default() },
+                cost: Resources {
+                    loom: 1,
+                    papyrus: 1,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::per_card_reward(Colour::Yellow, false, true, 0, 1),
@@ -896,7 +1039,12 @@ impl Card {
                 name: "Philosophers Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { clay: 3, loom: 1, papyrus: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 3,
+                    loom: 1,
+                    papyrus: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::per_card_reward(Colour::Green, false, true, 0, 1),
@@ -906,7 +1054,11 @@ impl Card {
                 name: "Spies Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { clay: 3, glass: 1, ..Default::default() },
+                cost: Resources {
+                    clay: 3,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::per_card_reward(Colour::Red, false, true, 0, 2),
@@ -916,7 +1068,12 @@ impl Card {
                 name: "Strategists Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { ore: 2, stone: 1, loom: 1, ..Default::default() },
+                cost: Resources {
+                    ore: 2,
+                    stone: 1,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
@@ -932,15 +1089,22 @@ impl Card {
                 name: "Shipowners Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { wood: 3, papyrus: 1, glass: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 3,
+                    papyrus: 1,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| matches!(game_item,
+                    game_item: Box::new(|game_item| {
+                        matches!(game_item,
                         CountableGameItem::CountableCard(card) if
                             card.info().colour == Colour::Brown ||
                             card.info().colour == Colour::Grey ||
-                            card.info().colour == Colour::Purple)),
+                            card.info().colour == Colour::Purple)
+                    }),
                     me: true,
                     neighbours: false,
                     coins_per_thing: 0,
@@ -952,7 +1116,12 @@ impl Card {
                 name: "Scientists Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { wood: 2, ore: 2, papyrus: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 2,
+                    ore: 2,
+                    papyrus: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::Science(vec![ScienceItem::Compass, ScienceItem::Cog, ScienceItem::Tablet]),
@@ -962,7 +1131,12 @@ impl Card {
                 name: "Migistrates Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { wood: 3, stone: 1, loom: 1, ..Default::default() },
+                cost: Resources {
+                    wood: 3,
+                    stone: 1,
+                    loom: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::per_card_reward(Colour::Blue, false, true, 0, 1),
@@ -972,7 +1146,12 @@ impl Card {
                 name: "Builders Guild",
                 age: Age::Third,
                 players_needed: vec![3],
-                cost: Resources { stone: 2, clay: 2, glass: 1, ..Default::default() },
+                cost: Resources {
+                    stone: 2,
+                    clay: 2,
+                    glass: 1,
+                    ..Default::default()
+                },
                 chains_to: vec![],
                 colour: Colour::Purple,
                 power: Power::PerGameItemRewards(vec![PerGameItemReward {
@@ -1014,18 +1193,16 @@ impl Card {
     pub fn immediate_strength(&self) -> f32 {
         match self.power() {
             Power::VictoryPoints(points) => points as f32,
-            _ => 0.0
+            _ => 0.0,
         }
     }
 }
-
 
 impl Display for Card {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.info().name)
     }
 }
-
 
 /// Creates a new, shuffled deck for the given age and number of players.
 pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {
@@ -1060,7 +1237,6 @@ pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {
     deck.shuffle(&mut thread_rng());
     deck
 }
-
 
 #[cfg(test)]
 mod tests {
