@@ -66,7 +66,9 @@ impl Human {
                     "  "
                 } else if options.own_cards_only() {
                     "* "
-                } else { "# " };
+                } else {
+                    "# "
+                };
                 vec![
                     playability.to_string() + &(i + 1).to_string(),
                     card.to_string(),
