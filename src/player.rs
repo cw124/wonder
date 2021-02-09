@@ -748,23 +748,23 @@ mod tests {
 
     #[test]
     fn strength_returns_sum_of_card_strengths() {
-        assert_eq!(0.0, Player::strength_internal(&vec![StonePit]));
-        assert_eq!(5.0, Player::strength_internal(&vec![StonePit, Quarry, Aqueduct]));
+        assert_eq!(0.0, Player::strength_internal(&[StonePit]));
+        assert_eq!(5.0, Player::strength_internal(&[StonePit, Quarry, Aqueduct]));
         assert_eq!(
             6.0,
-            Player::strength_internal(&vec![StonePit, Quarry, Aqueduct, Loom1, Apothecary])
+            Player::strength_internal(&[StonePit, Quarry, Aqueduct, Loom1, Apothecary])
         );
     }
 
     #[test]
     fn strength_returns_correct_strength_of_green_structures() {
-        assert_eq!(1.0, Player::strength_internal(&vec![Lodge]));
-        assert_eq!(4.0, Player::strength_internal(&vec![Lodge, Apothecary]));
-        assert_eq!(9.0, Player::strength_internal(&vec![Lodge, Apothecary, Dispensary]));
-        assert_eq!(10.0, Player::strength_internal(&vec![Lodge, Workshop, Library]));
+        assert_eq!(1.0, Player::strength_internal(&[Lodge]));
+        assert_eq!(4.0, Player::strength_internal(&[Lodge, Apothecary]));
+        assert_eq!(9.0, Player::strength_internal(&[Lodge, Apothecary, Dispensary]));
+        assert_eq!(10.0, Player::strength_internal(&[Lodge, Workshop, Library]));
         assert_eq!(
             21.0,
-            Player::strength_internal(&vec![Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library])
+            Player::strength_internal(&[Lodge, Apothecary, Dispensary, Laboratory, Workshop, Library])
         ); // rulebook example
     }
 
@@ -843,7 +843,7 @@ mod tests {
         player
     }
 
-    fn visible_game(players: &Vec<PublicPlayer>) -> VisibleGame {
+    fn visible_game(players: &[PublicPlayer]) -> VisibleGame {
         VisibleGame {
             players,
             player_index: 1,
