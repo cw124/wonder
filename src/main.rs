@@ -1,6 +1,8 @@
 use crate::algorithms::human::Human;
 use crate::algorithms::random::Random;
 use crate::game::Game;
+use crate::utils::plural;
+use itertools::Itertools;
 
 mod action;
 mod algorithms;
@@ -15,8 +17,18 @@ mod wonder;
 
 fn main() {
     let mut game = Game::new(vec![Box::new(Human {}), Box::new(Random {}), Box::new(Random {})]);
-    loop {
-        println!();
-        game.do_turn();
+    let scores = game.play();
+    let sorted_scores: Vec<(usize, i32)> = scores
+        .into_iter()
+        .enumerate()
+        .sorted_by_key(|(_, score)| *score)
+        .rev()
+        .collect();
+
+    // TODO: deal with draws
+    println!("Player {} wins!", sorted_scores[0].0 + 1);
+    println!();
+    for (i, score) in sorted_scores {
+        println!("Player {}: {}", i + 1, plural(score, "point"));
     }
 }
