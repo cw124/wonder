@@ -57,8 +57,16 @@ impl Game {
         }
     }
 
+    /// Plays the game! Returns the final scores of each player in the same order as originally passed to [`new`].
+    pub fn play(&mut self) -> Vec<i32> {
+        for _ in 0..18 {
+            self.do_turn();
+        }
+        self.players.iter().map(|player| player.strength() as i32).collect()
+    }
+
     /// Executes a turn of the game. Gets an [`Action`] from each [`Player`] and updates the game state accordingly.
-    pub fn do_turn(&mut self) {
+    fn do_turn(&mut self) {
         // At the start of each age, deal new cards and add any remaining cards to the discard pile.
         if self.turn % 6 == 0 {
             let mut deck = card::new_deck(self.age(), self.player_count());
@@ -297,6 +305,16 @@ mod tests {
         assert_eq!(WonderType::TempleOfArtemis, right.wonder().wonder_type);
         assert_eq!(WonderType::HangingGardensOfBabylon, player.wonder().wonder_type);
         assert_eq!(WonderType::ColossusOfRhodes, left.wonder().wonder_type);
+    }
+
+    #[test]
+    fn play_returns_scores() {
+        assert_eq!(
+            3,
+            Game::new(vec![Box::new(Random {}), Box::new(Random {}), Box::new(Random {})])
+                .play()
+                .len()
+        );
     }
 
     /// Always discards the last card in the hand.
