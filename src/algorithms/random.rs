@@ -12,7 +12,7 @@ use crate::player::Player;
 pub struct Random;
 
 impl PlayingAlgorithm for Random {
-    fn get_next_action(&self, player: &Player, visible_game: &VisibleGame) -> Action {
+    fn get_next_action(&mut self, player: &Player, visible_game: &VisibleGame) -> Action {
         let action_to_take = player
             .hand()
             .iter()

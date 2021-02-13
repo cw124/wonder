@@ -3,7 +3,6 @@ use std::fmt::Debug;
 use std::mem;
 
 use crate::action::{Action, ActionOptions, Borrow, Borrowing};
-use crate::algorithms::PlayingAlgorithm;
 use crate::card::{Card, Colour};
 use crate::game::VisibleGame;
 use crate::power::Power;
@@ -13,7 +12,6 @@ use crate::wonder::{WonderBoard, WonderSide, WonderType};
 
 #[derive(Debug)]
 pub struct Player {
-    algorithm: Box<dyn PlayingAlgorithm>,
     wonder: WonderBoard,
     built_structures: Vec<Card>,
     built_wonder_stages: Vec<Option<Card>>, // TODO: how to represent this?
@@ -23,9 +21,8 @@ pub struct Player {
 
 #[allow(dead_code)]
 impl Player {
-    pub fn new(wonder_type: WonderType, wonder_side: WonderSide, algorithm: Box<dyn PlayingAlgorithm>) -> Player {
+    pub fn new(wonder_type: WonderType, wonder_side: WonderSide) -> Player {
         Player {
-            algorithm,
             wonder: WonderBoard {
                 wonder_type,
                 wonder_side,
@@ -35,10 +32,6 @@ impl Player {
             coins: 3,
             hand: vec![],
         }
-    }
-
-    pub fn algorithm(&self) -> &dyn PlayingAlgorithm {
-        &*self.algorithm
     }
 
     pub fn wonder(&self) -> &WonderBoard {
@@ -393,8 +386,6 @@ impl PublicPlayer {
 #[cfg(test)]
 mod tests {
     use Card::*;
-
-    use crate::algorithms::random::Random;
 
     use super::*;
 
@@ -838,14 +829,14 @@ mod tests {
     }
 
     fn new_player(hand: Vec<Card>) -> Player {
-        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A, Box::new(Random {}));
+        let mut player = Player::new(WonderType::ColossusOfRhodes, WonderSide::A);
         player.swap_hand(hand);
         player
     }
 
-    fn visible_game(players: &[PublicPlayer]) -> VisibleGame {
+    fn visible_game(public_players: &[PublicPlayer]) -> VisibleGame {
         VisibleGame {
-            players,
+            public_players,
             player_index: 1,
         }
     }
