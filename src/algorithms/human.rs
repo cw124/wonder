@@ -16,7 +16,7 @@ pub struct Human;
 impl Human {
     /// Prints out the current game state for the given user index.
     fn print_state_for_user(player: &Player, visible_game: &VisibleGame) {
-        let all_players = visible_game.players;
+        let all_players = visible_game.public_players;
         let player_index = visible_game.player_index;
 
         // Offset the players so the player we're controller ends up in the middle.
@@ -192,7 +192,7 @@ impl Human {
 }
 
 impl PlayingAlgorithm for Human {
-    fn get_next_action(&self, player: &Player, visible_game: &VisibleGame) -> Action {
+    fn get_next_action(&mut self, player: &Player, visible_game: &VisibleGame) -> Action {
         Self::ask_for_action(player, visible_game)
     }
 }

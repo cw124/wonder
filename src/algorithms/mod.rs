@@ -14,5 +14,5 @@ pub trait PlayingAlgorithm: Debug {
     /// Returns the action that should be performed by the given player.
     ///
     /// `visible_game` is a restricted view of the state of all players in the game.
-    fn get_next_action(&self, player: &Player, visible_game: &VisibleGame) -> Action;
+    fn get_next_action(&mut self, player: &Player, visible_game: &VisibleGame) -> Action;
 }
