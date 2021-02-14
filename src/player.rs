@@ -163,7 +163,7 @@ impl Player {
         match action {
             Action::Build(card, borrowing) => self.can_play_card(card, borrowing, visible_game),
             Action::Wonder(_, _) => todo!(),
-            Action::Discard(_) => true,
+            Action::Discard(card) => self.hand.iter().any(|c| c == card),
         }
     }
 
@@ -708,6 +708,15 @@ mod tests {
                 &Action::Build(StonePit, Borrowing::no_borrowing()),
                 &visible_game(&players())
             )
+        );
+    }
+
+    #[test]
+    fn can_play_returns_false_if_player_does_not_have_card2() {
+        let player = new_player(vec![LumberYard]);
+        assert_eq!(
+            false,
+            player.can_play(&Action::Discard(StonePit), &visible_game(&players()))
         );
     }
 
