@@ -34,6 +34,17 @@ impl Player {
         }
     }
 
+    /// Creates a new player from a public player. Intended for playing algorithms who need to simulate a game.
+    pub fn new_from_public(public_player: &PublicPlayer, hand: Vec<Card>) -> Player {
+        Player {
+            wonder: public_player.wonder,
+            built_structures: public_player.built_structures.clone(),
+            built_wonder_stages: vec![],
+            coins: public_player.coins,
+            hand,
+        }
+    }
+
     pub fn wonder(&self) -> &WonderBoard {
         &self.wonder
     }
@@ -847,6 +858,7 @@ mod tests {
         VisibleGame {
             public_players,
             player_index: 1,
+            turn: 0,
         }
     }
 

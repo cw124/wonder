@@ -25,6 +25,10 @@ pub struct Game {
 
     /// The discard pile. Starts empty and gains the final, unplayed card from each player at the end of each age.
     discard_pile: Vec<Card>,
+
+    /// Whether to write output while playing the game. Some playing algorithms run "virtual" games as part of their
+    /// calculations and we don't want to write information about those, hence this field.
+    output_mode: OutputMode,
 }
 
 #[allow(dead_code)]
@@ -34,9 +38,7 @@ impl Game {
     /// inclusive, corresponding to between 3 and 7 players.
     /// TODO: for now, everyone gets the A side of the wonder.
     pub fn new(algorithms: Vec<Box<dyn PlayingAlgorithm>>) -> Game {
-        if algorithms.len() < 3 {
-            panic!("Must have at least three players")
-        }
+        // We have to check this here as well as in new_with_players because there are only 7 wonders.
         if algorithms.len() > 7 {
             panic!("Must have at most seven players")
         }
@@ -54,16 +56,32 @@ impl Game {
             })
             .collect();
 
+        Self::new_with_players(sentient_players, 0, OutputMode::WriteOutput)
+    }
+
+    /// Creates a new game with the given [`SentientPlayer`]s and starting from the given turn. Intended to be used by
+    /// playing algorithms that need to simulate a game starting from the position of the current game.
+    pub fn new_with_players(sentient_players: Vec<SentientPlayer>, turn: u32, output_mode: OutputMode) -> Game {
+        if sentient_players.len() < 3 {
+            panic!("Must have at least three players")
+        }
+        if sentient_players.len() > 7 {
+            panic!("Must have at most seven players")
+        }
+        if turn > 17 {
+            panic!("Turn cannot be larger than 17")
+        }
         Game {
             sentient_players,
-            turn: 0,
+            turn,
             discard_pile: vec![],
+            output_mode,
         }
     }
 
     /// Plays the game! Returns the final scores of each player in the same order as originally passed to [`new`].
     pub fn play(&mut self) -> Vec<i32> {
-        for _ in 0..18 {
+        for _ in self.turn..18 {
             self.do_turn();
         }
         self.sentient_players
@@ -76,7 +94,7 @@ impl Game {
     fn do_turn(&mut self) {
         // At the start of each age, deal new cards and add any remaining cards to the discard pile.
         if self.turn % 6 == 0 {
-            let mut deck = card::new_deck(self.age(), self.player_count());
+            let mut deck = card::new_deck(&self.age(), self.player_count());
             for sentient_player in self.sentient_players.iter_mut() {
                 let old_hand = sentient_player.player.swap_hand(deck.drain(0..7).collect());
                 for card in old_hand {
@@ -99,6 +117,7 @@ impl Game {
                 let visible_game = VisibleGame {
                     public_players: &public_players,
                     player_index: index,
+                    turn: self.turn,
                 };
                 let action = sentient_player
                     .algorithm
@@ -114,16 +133,18 @@ impl Game {
             })
             .collect();
 
-        actions
-            .iter()
-            .enumerate()
-            .for_each(|(i, action)| println!("Player {}: {}", i + 1, action));
+        if self.output_mode == OutputMode::WriteOutput {
+            actions
+                .iter()
+                .enumerate()
+                .for_each(|(i, action)| println!("Player {}: {}", i + 1, action));
+        }
 
         // Pass cards.
         let num_players = self.sentient_players.len();
         let mut hand = vec![];
         for i in 0..num_players + 1 {
-            let index = if self.age() == Age::Second {
+            let index = if Self::age(&self) == Age::Second {
                 // In the second age, we pass cards anti-clockwise.
                 num_players - i
             } else {
@@ -142,7 +163,12 @@ impl Game {
 
     /// Returns the current age being played.
     pub fn age(&self) -> Age {
-        match self.turn {
+        Self::age_internal(self.turn)
+    }
+
+    /// Shared between Game::age and VisibleGame::age. Returns the age given a turn number.
+    fn age_internal(turn: u32) -> Age {
+        match turn {
             0..=5 => Age::First,
             6..=11 => Age::Second,
             12..=17 => Age::Third,
@@ -182,9 +208,9 @@ impl Game {
 /// and methods of `Player` in order to make decisions. Therefore, we'd have a mutable and immutable borrow at the same
 /// time.
 #[derive(Debug)]
-struct SentientPlayer {
-    player: Player,
-    algorithm: Box<dyn PlayingAlgorithm>,
+pub struct SentientPlayer {
+    pub player: Player,
+    pub algorithm: Box<dyn PlayingAlgorithm>,
 }
 
 /// The state of the game visible to all players (ie. excluding things like players' hands).
@@ -194,6 +220,7 @@ pub struct VisibleGame<'a> {
     pub public_players: &'a [PublicPlayer],
     /// The index of the player this has been generated for.
     pub player_index: usize,
+    pub turn: u32,
 }
 
 impl<'a> VisibleGame<'a> {
@@ -216,6 +243,17 @@ impl<'a> VisibleGame<'a> {
     pub fn right_neighbour_index(&self) -> usize {
         (self.player_index + self.public_players.len() - 1) % self.public_players.len()
     }
+
+    /// Returns the current age being played.
+    pub fn age(&self) -> Age {
+        Game::age_internal(self.turn)
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum OutputMode {
+    WriteOutput,
+    NoOutput,
 }
 
 #[cfg(test)]

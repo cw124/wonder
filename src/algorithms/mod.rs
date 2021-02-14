@@ -7,6 +7,7 @@ use crate::game::VisibleGame;
 use crate::player::Player;
 
 pub mod human;
+pub mod monte_carlo;
 pub mod random;
 
 /// An algorithm that can play 7 Wonders.
