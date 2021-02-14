@@ -10,6 +10,7 @@ use crate::power::PerGameItemReward;
 use crate::power::Power;
 use crate::power::{CountableGameItem, ScienceItem};
 use crate::resources::Resources;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, EnumIter)]
 #[allow(dead_code)]
@@ -1205,30 +1206,41 @@ impl Display for Card {
 }
 
 /// Creates a new, shuffled deck for the given age and number of players.
-pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {
+pub fn new_deck(age: &Age, player_count: u32) -> Vec<Card> {
+    new_deck_without(age, player_count, &HashMap::new())
+}
+
+/// Creates a new, shuffled deck for the given age, with the cards in `missing` excluded. `missing` is a hash map from
+/// card to the number of instances of that card that should be excluded. This is intended for playing algorithms that
+/// want to allocate random cards to players (because they don't know the actual cards those players have in their
+/// hands), but they know certain cards are definitely not part of those players hands, because they're in the
+/// algorithm's hand or on the table.
+pub fn new_deck_without(age: &Age, player_count: u32, missing: &HashMap<Card, u32>) -> Vec<Card> {
     let mut deck: Vec<Card> = vec![];
     let mut guilds: Vec<Card> = vec![];
 
     // Add all cards with the correct age and number of players needed, added guilds to a separate vector for the time
     // being.
     for card in Card::iter() {
-        if card.age() == age {
-            for players_needed in card.players_needed() {
-                if player_count >= players_needed {
-                    if card.colour() == Colour::Purple {
-                        guilds.push(card);
-                    } else {
-                        deck.push(card);
-                    }
+        if card.age() == *age {
+            let num_cards = card.players_needed().iter().filter(|i| *i <= &player_count).count() as u32;
+            for _ in 0..(num_cards - missing.get(&card).unwrap_or(&0)) {
+                if card.colour() == Colour::Purple {
+                    guilds.push(card);
+                } else {
+                    deck.push(card);
                 }
             }
         }
     }
 
+    let missing_guild_count = missing.keys().filter(|card| card.colour() == Colour::Purple).count();
+    let guild_count = (player_count + 2) - missing_guild_count as u32;
+
     // Shuffle the guilds separately and add player_count + 2 random ones to the deck.
-    if age == Age::Third {
+    if *age == Age::Third {
         guilds.shuffle(&mut thread_rng());
-        for _i in 0..(player_count + 2) as usize {
+        for _ in 0..guild_count {
             deck.push(guilds.pop().unwrap());
         }
     }
@@ -1241,31 +1253,39 @@ pub fn new_deck(age: Age, player_count: u32) -> Vec<Card> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::iter::FromIterator;
 
     #[test]
     fn new_deck_has_right_number_of_cards() {
-        assert_eq!(21, new_deck(Age::First, 3).len());
-        assert_eq!(28, new_deck(Age::First, 4).len());
-        assert_eq!(35, new_deck(Age::First, 5).len());
-        assert_eq!(42, new_deck(Age::First, 6).len());
-        assert_eq!(49, new_deck(Age::First, 7).len());
+        assert_eq!(21, new_deck(&Age::First, 3).len());
+        assert_eq!(28, new_deck(&Age::First, 4).len());
+        assert_eq!(35, new_deck(&Age::First, 5).len());
+        assert_eq!(42, new_deck(&Age::First, 6).len());
+        assert_eq!(49, new_deck(&Age::First, 7).len());
 
-        assert_eq!(21, new_deck(Age::Second, 3).len());
-        assert_eq!(28, new_deck(Age::Second, 4).len());
-        assert_eq!(35, new_deck(Age::Second, 5).len());
-        assert_eq!(42, new_deck(Age::Second, 6).len());
-        assert_eq!(49, new_deck(Age::Second, 7).len());
+        assert_eq!(21, new_deck(&Age::Second, 3).len());
+        assert_eq!(28, new_deck(&Age::Second, 4).len());
+        assert_eq!(35, new_deck(&Age::Second, 5).len());
+        assert_eq!(42, new_deck(&Age::Second, 6).len());
+        assert_eq!(49, new_deck(&Age::Second, 7).len());
 
-        assert_eq!(21, new_deck(Age::Third, 3).len());
-        assert_eq!(28, new_deck(Age::Third, 4).len());
-        assert_eq!(35, new_deck(Age::Third, 5).len());
-        assert_eq!(42, new_deck(Age::Third, 6).len());
-        assert_eq!(49, new_deck(Age::Third, 7).len());
+        assert_eq!(21, new_deck(&Age::Third, 3).len());
+        assert_eq!(28, new_deck(&Age::Third, 4).len());
+        assert_eq!(35, new_deck(&Age::Third, 5).len());
+        assert_eq!(42, new_deck(&Age::Third, 6).len());
+        assert_eq!(49, new_deck(&Age::Third, 7).len());
     }
 
     #[test]
     fn no_second_or_third_age_cards_in_first_age_deck() {
-        assert!(!new_deck(Age::First, 3).contains(&Card::Sawmill));
-        assert!(!new_deck(Age::First, 3).contains(&Card::Pantheon));
+        assert!(!new_deck(&Age::First, 3).contains(&Card::Sawmill));
+        assert!(!new_deck(&Age::First, 3).contains(&Card::Pantheon));
+    }
+
+    #[test]
+    fn new_deck_without_excludes_given_cards() {
+        let deck = new_deck_without(&Age::First, 7, &HashMap::from_iter(vec![(Card::Tavern, 2)]));
+        assert_eq!(49 - 2, deck.len());
+        assert_eq!(1, deck.iter().filter(|card| **card == Card::Tavern).count());
     }
 }

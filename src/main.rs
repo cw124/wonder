@@ -1,4 +1,5 @@
 use crate::algorithms::human::Human;
+use crate::algorithms::monte_carlo::MonteCarlo;
 use crate::algorithms::random::Random;
 use crate::game::Game;
 use crate::utils::plural;
@@ -16,7 +17,7 @@ mod utils;
 mod wonder;
 
 fn main() {
-    let mut game = Game::new(vec![Box::new(Human {}), Box::new(Random {}), Box::new(Random {})]);
+    let mut game = Game::new(vec![Box::new(Human {}), Box::new(MonteCarlo {}), Box::new(Random {})]);
     let scores = game.play();
     let sorted_scores: Vec<(usize, i32)> = scores
         .into_iter()
