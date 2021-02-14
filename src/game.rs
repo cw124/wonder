@@ -4,6 +4,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use strum::IntoEnumIterator;
 
+use crate::action::Action;
 use crate::algorithms::PlayingAlgorithm;
 use crate::card;
 use crate::card::{Age, Card};
@@ -91,24 +92,32 @@ impl Game {
             .iter()
             .map(|sentient_player| PublicPlayer::new(&sentient_player.player))
             .collect();
-        for index in 0..self.sentient_players.len() {
-            let (right_player, sentient_player, left_player) =
-                Self::get_mutable_player_and_neighbours(&mut self.sentient_players, index);
-            let visible_game = VisibleGame {
-                public_players: &public_players,
-                player_index: index,
-            };
-            let action = sentient_player
-                .algorithm
-                .get_next_action(&sentient_player.player, &visible_game);
-            sentient_player.player.do_action(
-                &action,
-                &visible_game,
-                &mut left_player.player,
-                &mut right_player.player,
-                &mut self.discard_pile,
-            );
-        }
+        let actions: Vec<Action> = (0..self.sentient_players.len())
+            .map(|index| {
+                let (right_player, sentient_player, left_player) =
+                    Self::get_mutable_player_and_neighbours(&mut self.sentient_players, index);
+                let visible_game = VisibleGame {
+                    public_players: &public_players,
+                    player_index: index,
+                };
+                let action = sentient_player
+                    .algorithm
+                    .get_next_action(&sentient_player.player, &visible_game);
+                sentient_player.player.do_action(
+                    &action,
+                    &visible_game,
+                    &mut left_player.player,
+                    &mut right_player.player,
+                    &mut self.discard_pile,
+                );
+                action
+            })
+            .collect();
+
+        actions
+            .iter()
+            .enumerate()
+            .for_each(|(i, action)| println!("Player {}: {}", i + 1, action));
 
         // Pass cards.
         let num_players = self.sentient_players.len();
