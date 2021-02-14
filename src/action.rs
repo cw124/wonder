@@ -19,11 +19,15 @@ pub enum Action {
 }
 
 impl Display for Action {
+    /// Formats the action, returning only public information. For example, if the action is to discard a card, the
+    /// card in question is not revealed.
+    /// TODO: Handle borrowing. In which case we probably need a different function that can take the player index and
+    ///  return things like "Build Baths by paying 2 coins to player 3 to borrow stone".
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Action::Build(card, _) => write!(f, "Build {}", card.to_string()),
-            Action::Wonder(card, _) => write!(f, "Use {} to build a wonder stage", card.to_string()),
-            Action::Discard(card) => write!(f, "Discard {}", card.to_string()),
+            Action::Wonder(_, _) => write!(f, "Build a wonder stage"),
+            Action::Discard(_) => write!(f, "Discard"),
         }
     }
 }
