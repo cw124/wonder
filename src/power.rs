@@ -60,7 +60,7 @@ impl Power {
         Power::PerGameItemRewards(vec![PerGameItemReward {
             game_item: Box::new(move |game_item| {
                 matches!(game_item,
-                    CountableGameItem::CountableCard(card) if card.colour() == colour)
+                    CountableGameItem::CountableCard(card) if card.colour() == &colour)
             }),
             me,
             neighbours,
@@ -121,7 +121,7 @@ impl Display for ScienceItem {
 pub struct PerGameItemReward {
     /// A function or closure that returns true if the given [`CountableGameItem`] is one of the things counted by this
     /// reward. For example, it might return true if the `CountableGameItem` was a brown card.
-    pub game_item: Box<dyn Fn(CountableGameItem) -> bool>,
+    pub game_item: Box<dyn Fn(CountableGameItem) -> bool + Sync>,
     /// True if the player's items should be counted.
     pub me: bool,
     /// True if the player's neighbours' items should be counted.

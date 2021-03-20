@@ -10,6 +10,7 @@ use crate::power::PerGameItemReward;
 use crate::power::Power;
 use crate::power::{CountableGameItem, ScienceItem};
 use crate::resources::Resources;
+use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, EnumIter)]
@@ -166,1034 +167,1044 @@ struct CardInfo<'a> {
     power: Power,
 }
 
+lazy_static! {
+    static ref LUMBER_YARD: CardInfo<'static> = CardInfo {
+        name: "Lumber Yard",
+        age: Age::First,
+        players_needed: vec![3, 4],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::wood(1)]),
+    };
+    static ref STONE_PIT: CardInfo<'static> = CardInfo {
+        name: "Stone Pit",
+        age: Age::First,
+        players_needed: vec![3, 5],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::stone(1)]),
+    };
+    static ref CLAY_POOL: CardInfo<'static> = CardInfo {
+        name: "Clay Pool",
+        age: Age::First,
+        players_needed: vec![3, 5],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::clay(1)]),
+    };
+    static ref ORE_VEIN: CardInfo<'static> = CardInfo {
+        name: "Ore Vein",
+        age: Age::First,
+        players_needed: vec![3, 4],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::ore(1)]),
+    };
+    static ref TREE_FARM: CardInfo<'static> = CardInfo {
+        name: "Tree Farm",
+        age: Age::First,
+        players_needed: vec![6],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::clay(1)]),
+    };
+    static ref EXCAVATION: CardInfo<'static> = CardInfo {
+        name: "Excavation",
+        age: Age::First,
+        players_needed: vec![4],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::clay(1)]),
+    };
+    static ref CLAY_PIT: CardInfo<'static> = CardInfo {
+        name: "Clay Pit",
+        age: Age::First,
+        players_needed: vec![3],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::clay(1), Resources::ore(1)]),
+    };
+    static ref TIMBER_YARD: CardInfo<'static> = CardInfo {
+        name: "Timber Yard",
+        age: Age::First,
+        players_needed: vec![3],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::wood(1)]),
+    };
+    static ref FOREST_CAVE: CardInfo<'static> = CardInfo {
+        name: "Forest Cave",
+        age: Age::First,
+        players_needed: vec![5],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::ore(1)]),
+    };
+    static ref MINE: CardInfo<'static> = CardInfo {
+        name: "Mine",
+        age: Age::First,
+        players_needed: vec![6],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::ore(1), Resources::stone(1)]),
+    };
+    static ref LOOM1: CardInfo<'static> = CardInfo {
+        name: "Loom",
+        age: Age::First,
+        players_needed: vec![3, 6],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Grey,
+        power: Power::PurchasableProducer(vec![Resources::loom(1)]),
+    };
+    static ref GLASSWORKS1: CardInfo<'static> = CardInfo {
+        name: "Glassworks",
+        age: Age::First,
+        players_needed: vec![3, 6],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Grey,
+        power: Power::PurchasableProducer(vec![Resources::glass(1)]),
+    };
+    static ref PRESS1: CardInfo<'static> = CardInfo {
+        name: "Press",
+        age: Age::First,
+        players_needed: vec![3, 6],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Grey,
+        power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
+    };
+    static ref PAWNSHOP: CardInfo<'static> = CardInfo {
+        name: "Pawnshop",
+        age: Age::First,
+        players_needed: vec![4, 7],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(3),
+    };
+    static ref BATHS: CardInfo<'static> = CardInfo {
+        name: "Baths",
+        age: Age::First,
+        players_needed: vec![3, 7],
+        cost: Resources::stone(1),
+        chains_to: vec![Card::Aqueduct],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(3),
+    };
+    static ref ALTAR: CardInfo<'static> = CardInfo {
+        name: "Altar",
+        age: Age::First,
+        players_needed: vec![3, 5],
+        cost: Resources::free(),
+        chains_to: vec![Card::Temple],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(2),
+    };
+    static ref THEATER: CardInfo<'static> = CardInfo {
+        name: "Theater",
+        age: Age::First,
+        players_needed: vec![3, 6],
+        cost: Resources::free(),
+        chains_to: vec![Card::Statue],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(2),
+    };
+    static ref TAVERN: CardInfo<'static> = CardInfo {
+        name: "Tavern",
+        age: Age::First,
+        players_needed: vec![4, 5, 7],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::Coins(5),
+    };
+    static ref EAST_TRADING_POST: CardInfo<'static> = CardInfo {
+        name: "East Trading Post",
+        age: Age::First,
+        players_needed: vec![3, 7],
+        cost: Resources::free(),
+        chains_to: vec![Card::Forum],
+        colour: Colour::Yellow,
+        power: Power::BuyBrownAntiClockwise,
+    };
+    static ref WEST_TRADING_POST: CardInfo<'static> = CardInfo {
+        name: "West Trading Post",
+        age: Age::First,
+        players_needed: vec![3, 7],
+        cost: Resources::free(),
+        chains_to: vec![Card::Forum],
+        colour: Colour::Yellow,
+        power: Power::BuyBrownClockwise,
+    };
+    static ref MARKETPLACE: CardInfo<'static> = CardInfo {
+        name: "Marketplace",
+        age: Age::First,
+        players_needed: vec![3, 6],
+        cost: Resources::free(),
+        chains_to: vec![Card::Caravansery],
+        colour: Colour::Yellow,
+        power: Power::BuyGrey,
+    };
+    static ref APOTHECARY: CardInfo<'static> = CardInfo {
+        name: "Apothecary",
+        age: Age::First,
+        players_needed: vec![3, 5],
+        cost: Resources::loom(1),
+        chains_to: vec![Card::Stables, Card::Dispensary],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Compass]),
+    };
+    static ref WORKSHOP: CardInfo<'static> = CardInfo {
+        name: "Workshop",
+        age: Age::First,
+        players_needed: vec![3, 7],
+        cost: Resources::glass(1),
+        chains_to: vec![Card::ArcheryRange, Card::Laboratory],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Cog]),
+    };
+    static ref SCRIPTORIUM: CardInfo<'static> = CardInfo {
+        name: "Scriptorium",
+        age: Age::First,
+        players_needed: vec![3, 4],
+        cost: Resources::papyrus(1),
+        chains_to: vec![Card::Courthouse, Card::Library],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Tablet]),
+    };
+    static ref STOCKADE: CardInfo<'static> = CardInfo {
+        name: "Stockade",
+        age: Age::First,
+        players_needed: vec![3, 7],
+        cost: Resources::wood(1),
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(1),
+    };
+    static ref BARRACKS: CardInfo<'static> = CardInfo {
+        name: "Barracks",
+        age: Age::First,
+        players_needed: vec![3, 5],
+        cost: Resources::ore(1),
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(1),
+    };
+    static ref GUARD_TOWER: CardInfo<'static> = CardInfo {
+        name: "Guard Tower",
+        age: Age::First,
+        players_needed: vec![3, 4],
+        cost: Resources::clay(1),
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(1),
+    };
+}
+
+lazy_static! {
+    static ref SAWMILL: CardInfo<'static> = CardInfo {
+        name: "Sawmill",
+        age: Age::Second,
+        players_needed: vec![3, 4],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::wood(2)]),
+    };
+    static ref QUARRY: CardInfo<'static> = CardInfo {
+        name: "Quarry",
+        age: Age::Second,
+        players_needed: vec![3, 4],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::stone(2)]),
+    };
+    static ref BRICKYARD: CardInfo<'static> = CardInfo {
+        name: "Brickyard",
+        age: Age::Second,
+        players_needed: vec![3, 4],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::clay(2)]),
+    };
+    static ref FOUNDRY: CardInfo<'static> = CardInfo {
+        name: "Foundry",
+        age: Age::Second,
+        players_needed: vec![3, 4],
+        cost: Resources::coins(1),
+        chains_to: vec![],
+        colour: Colour::Brown,
+        power: Power::PurchasableProducer(vec![Resources::ore(2)]),
+    };
+    static ref LOOM2: CardInfo<'static> = CardInfo {
+        name: "Loom",
+        age: Age::Second,
+        players_needed: vec![3, 5],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Grey,
+        power: Power::PurchasableProducer(vec![Resources::loom(1)]),
+    };
+    static ref GLASSWORKS2: CardInfo<'static> = CardInfo {
+        name: "Glassworks",
+        age: Age::Second,
+        players_needed: vec![3, 5],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Grey,
+        power: Power::PurchasableProducer(vec![Resources::glass(1)]),
+    };
+    static ref PRESS2: CardInfo<'static> = CardInfo {
+        name: "Press",
+        age: Age::Second,
+        players_needed: vec![3, 5],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Grey,
+        power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
+    };
+    static ref AQUEDUCT: CardInfo<'static> = CardInfo {
+        name: "Aqueduct",
+        age: Age::Second,
+        players_needed: vec![3, 7],
+        cost: Resources::stone(3),
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(5),
+    };
+    static ref TEMPLE: CardInfo<'static> = CardInfo {
+        name: "Temple",
+        age: Age::Second,
+        players_needed: vec![3, 6],
+        cost: Resources {
+            wood: 1,
+            clay: 1,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![Card::Pantheon],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(3),
+    };
+    static ref STATUE: CardInfo<'static> = CardInfo {
+        name: "Statue",
+        age: Age::Second,
+        players_needed: vec![3, 7],
+        cost: Resources {
+            wood: 1,
+            ore: 2,
+            ..Default::default()
+        },
+        chains_to: vec![Card::Gardens],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(4),
+    };
+    static ref COURTHOUSE: CardInfo<'static> = CardInfo {
+        name: "Courthouse",
+        age: Age::Second,
+        players_needed: vec![3, 5],
+        cost: Resources {
+            clay: 2,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(4),
+    };
+    static ref FORUM: CardInfo<'static> = CardInfo {
+        name: "Forum",
+        age: Age::Second,
+        players_needed: vec![3, 6, 7],
+        cost: Resources::clay(2),
+        chains_to: vec![Card::Haven],
+        colour: Colour::Yellow,
+        power: Power::Producer(vec![Resources::loom(1), Resources::glass(1), Resources::papyrus(1)]),
+    };
+    static ref CARAVANSERY: CardInfo<'static> = CardInfo {
+        name: "Caravansery",
+        age: Age::Second,
+        players_needed: vec![3, 5, 6],
+        cost: Resources::wood(2),
+        chains_to: vec![Card::Lighthouse],
+        colour: Colour::Yellow,
+        power: Power::Producer(vec![
+            Resources::wood(1),
+            Resources::stone(1),
+            Resources::ore(1),
+            Resources::clay(1),
+        ]),
+    };
+    static ref VINEYARD: CardInfo<'static> = CardInfo {
+        name: "Vineyard",
+        age: Age::Second,
+        players_needed: vec![3, 6],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::per_card_reward(Colour::Brown, true, true, 1, 0),
+    };
+    static ref BAZAR: CardInfo<'static> = CardInfo {
+        name: "Bazar",
+        age: Age::Second,
+        players_needed: vec![4, 7],
+        cost: Resources::free(),
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::per_card_reward(Colour::Grey, true, true, 2, 0),
+    };
+    static ref DISPENSARY: CardInfo<'static> = CardInfo {
+        name: "Dispensary",
+        age: Age::Second,
+        players_needed: vec![3, 4],
+        cost: Resources {
+            ore: 2,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![Card::Arena, Card::Lodge],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Compass]),
+    };
+    static ref LABORATORY: CardInfo<'static> = CardInfo {
+        name: "Laboratory",
+        age: Age::Second,
+        players_needed: vec![3, 5],
+        cost: Resources {
+            clay: 2,
+            papyrus: 1,
+            ..Default::default()
+        },
+        chains_to: vec![Card::SiegeWorkshop, Card::Observatory],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Cog]),
+    };
+    static ref LIBRARY: CardInfo<'static> = CardInfo {
+        name: "Library",
+        age: Age::Second,
+        players_needed: vec![3, 6],
+        cost: Resources {
+            stone: 2,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![Card::Senate, Card::University],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Tablet]),
+    };
+    static ref SCHOOL: CardInfo<'static> = CardInfo {
+        name: "School",
+        age: Age::Second,
+        players_needed: vec![3, 7],
+        cost: Resources {
+            wood: 1,
+            papyrus: 1,
+            ..Default::default()
+        },
+        chains_to: vec![Card::Academy, Card::Study],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Tablet]),
+    };
+    static ref WALLS: CardInfo<'static> = CardInfo {
+        name: "Walls",
+        age: Age::Second,
+        players_needed: vec![3, 7],
+        cost: Resources::stone(3),
+        chains_to: vec![Card::Fortifications],
+        colour: Colour::Red,
+        power: Power::Shields(2),
+    };
+    static ref TRAINING_GROUND: CardInfo<'static> = CardInfo {
+        name: "Training Ground",
+        age: Age::Second,
+        players_needed: vec![4, 6, 7],
+        cost: Resources {
+            wood: 1,
+            ore: 2,
+            ..Default::default()
+        },
+        chains_to: vec![Card::Circus],
+        colour: Colour::Red,
+        power: Power::Shields(2),
+    };
+    static ref STABLES: CardInfo<'static> = CardInfo {
+        name: "Stables",
+        age: Age::Second,
+        players_needed: vec![3, 5],
+        cost: Resources {
+            ore: 1,
+            clay: 1,
+            wood: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(2),
+    };
+    static ref ARCHERY_RANGE: CardInfo<'static> = CardInfo {
+        name: "Archery Range",
+        age: Age::Second,
+        players_needed: vec![3, 6],
+        cost: Resources {
+            wood: 2,
+            ore: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(2),
+    };
+}
+
+lazy_static! {
+    static ref PANTHEON: CardInfo<'static> = CardInfo {
+        name: "Pantheon",
+        age: Age::Third,
+        players_needed: vec![3, 6],
+        cost: Resources {
+            clay: 2,
+            ore: 1,
+            papyrus: 1,
+            loom: 1,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(7),
+    };
+    static ref GARDENS: CardInfo<'static> = CardInfo {
+        name: "Gardens",
+        age: Age::Third,
+        players_needed: vec![3, 4],
+        cost: Resources {
+            wood: 2,
+            clay: 2,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(5),
+    };
+    static ref TOWN_HALL: CardInfo<'static> = CardInfo {
+        name: "Town Hall",
+        age: Age::Third,
+        players_needed: vec![3, 5, 6],
+        cost: Resources {
+            glass: 1,
+            ore: 1,
+            stone: 2,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(6),
+    };
+    static ref PALACE: CardInfo<'static> = CardInfo {
+        name: "Palace",
+        age: Age::Third,
+        players_needed: vec![3, 7],
+        cost: Resources {
+            glass: 1,
+            papyrus: 1,
+            loom: 1,
+            clay: 1,
+            wood: 1,
+            ore: 1,
+            stone: 1,
+            coins: 0,
+        },
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(8),
+    };
+    static ref SENATE: CardInfo<'static> = CardInfo {
+        name: "Senate",
+        age: Age::Third,
+        players_needed: vec![3, 5],
+        cost: Resources {
+            ore: 1,
+            stone: 1,
+            wood: 2,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Blue,
+        power: Power::VictoryPoints(6),
+    };
+    static ref HAVEN: CardInfo<'static> = CardInfo {
+        name: "Haven",
+        age: Age::Third,
+        players_needed: vec![3, 4],
+        cost: Resources {
+            loom: 1,
+            ore: 1,
+            wood: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::per_card_reward(Colour::Brown, true, false, 1, 1),
+    };
+    static ref LIGHTHOUSE: CardInfo<'static> = CardInfo {
+        name: "Lighthouse",
+        age: Age::Third,
+        players_needed: vec![3, 6],
+        cost: Resources {
+            glass: 1,
+            stone: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::per_card_reward(Colour::Yellow, true, false, 1, 1),
+    };
+    static ref CHAMBER_OF_COMMERCE: CardInfo<'static> = CardInfo {
+        name: "Chamber Of Commerce",
+        age: Age::Third,
+        players_needed: vec![4, 6],
+        cost: Resources {
+            clay: 2,
+            papyrus: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::per_card_reward(Colour::Grey, true, false, 2, 2),
+    };
+    static ref ARENA: CardInfo<'static> = CardInfo {
+        name: "Arena",
+        age: Age::Third,
+        players_needed: vec![3, 5, 7],
+        cost: Resources {
+            ore: 1,
+            stone: 2,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Yellow,
+        power: Power::PerGameItemRewards(vec![PerGameItemReward {
+            game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::CompletedWonderStage)),
+            me: true,
+            neighbours: false,
+            coins_per_thing: 3,
+            points_per_thing: 1,
+        }]),
+    };
+    static ref LODGE: CardInfo<'static> = CardInfo {
+        name: "Lodge",
+        age: Age::Third,
+        players_needed: vec![3, 6],
+        cost: Resources {
+            clay: 2,
+            loom: 1,
+            papyrus: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Compass]),
+    };
+    static ref OBSERVATORY: CardInfo<'static> = CardInfo {
+        name: "Observatory",
+        age: Age::Third,
+        players_needed: vec![3, 7],
+        cost: Resources {
+            ore: 2,
+            glass: 1,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Cog]),
+    };
+    static ref UNIVERSITY: CardInfo<'static> = CardInfo {
+        name: "University",
+        age: Age::Third,
+        players_needed: vec![3, 4],
+        cost: Resources {
+            wood: 2,
+            papyrus: 1,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Tablet]),
+    };
+    static ref ACADEMY: CardInfo<'static> = CardInfo {
+        name: "Academy",
+        age: Age::Third,
+        players_needed: vec![3, 7],
+        cost: Resources {
+            stone: 3,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Compass]),
+    };
+    static ref STUDY: CardInfo<'static> = CardInfo {
+        name: "Study",
+        age: Age::Third,
+        players_needed: vec![3, 5],
+        cost: Resources {
+            wood: 1,
+            papyrus: 1,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Green,
+        power: Power::Science(vec![ScienceItem::Cog]),
+    };
+    static ref FORTIFICATIONS: CardInfo<'static> = CardInfo {
+        name: "Fortifications",
+        age: Age::Third,
+        players_needed: vec![3, 7],
+        cost: Resources {
+            stone: 1,
+            ore: 3,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(3),
+    };
+    static ref CIRCUS: CardInfo<'static> = CardInfo {
+        name: "Circus",
+        age: Age::Third,
+        players_needed: vec![4, 5, 6],
+        cost: Resources {
+            stone: 3,
+            ore: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(3),
+    };
+    static ref ARSENAL: CardInfo<'static> = CardInfo {
+        name: "Arsenal",
+        age: Age::Third,
+        players_needed: vec![3, 4, 7],
+        cost: Resources {
+            ore: 1,
+            wood: 2,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(3),
+    };
+    static ref SIEGE_WORKSHOP: CardInfo<'static> = CardInfo {
+        name: "Siege Workshop",
+        age: Age::Third,
+        players_needed: vec![3, 5],
+        cost: Resources {
+            wood: 1,
+            clay: 3,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Red,
+        power: Power::Shields(3),
+    };
+    static ref WORKERS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Workers Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            ore: 2,
+            clay: 1,
+            stone: 1,
+            wood: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::per_card_reward(Colour::Brown, false, true, 0, 1),
+    };
+    static ref CRAFTSMENS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Craftsmens Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            ore: 2,
+            stone: 2,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::per_card_reward(Colour::Grey, false, true, 0, 2),
+    };
+    static ref TRADERS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Traders Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            loom: 1,
+            papyrus: 1,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::per_card_reward(Colour::Yellow, false, true, 0, 1),
+    };
+    static ref PHILOSOPHERS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Philosophers Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            clay: 3,
+            loom: 1,
+            papyrus: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::per_card_reward(Colour::Green, false, true, 0, 1),
+    };
+    static ref SPIES_GUILD: CardInfo<'static> = CardInfo {
+        name: "Spies Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            clay: 3,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::per_card_reward(Colour::Red, false, true, 0, 2),
+    };
+    static ref STRATEGISTS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Strategists Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            ore: 2,
+            stone: 1,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::PerGameItemRewards(vec![PerGameItemReward {
+            game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::DefeatToken)),
+            me: false,
+            neighbours: true,
+            coins_per_thing: 0,
+            points_per_thing: 1,
+        }]),
+    };
+    static ref SHIPOWNERS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Shipowners Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            wood: 3,
+            papyrus: 1,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::PerGameItemRewards(vec![PerGameItemReward {
+            game_item: Box::new(|game_item| {
+                matches!(game_item,
+                CountableGameItem::CountableCard(card) if
+                    card.info().colour == Colour::Brown ||
+                    card.info().colour == Colour::Grey ||
+                    card.info().colour == Colour::Purple)
+            }),
+            me: true,
+            neighbours: false,
+            coins_per_thing: 0,
+            points_per_thing: 1,
+        }]),
+    };
+    static ref SCIENTISTS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Scientists Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            wood: 2,
+            ore: 2,
+            papyrus: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::Science(vec![ScienceItem::Compass, ScienceItem::Cog, ScienceItem::Tablet]),
+    };
+    static ref MAGISTRATES_GUILD: CardInfo<'static> = CardInfo {
+        name: "Migistrates Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            wood: 3,
+            stone: 1,
+            loom: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::per_card_reward(Colour::Blue, false, true, 0, 1),
+    };
+    static ref BUILDERS_GUILD: CardInfo<'static> = CardInfo {
+        name: "Builders Guild",
+        age: Age::Third,
+        players_needed: vec![3],
+        cost: Resources {
+            stone: 2,
+            clay: 2,
+            glass: 1,
+            ..Default::default()
+        },
+        chains_to: vec![],
+        colour: Colour::Purple,
+        power: Power::PerGameItemRewards(vec![PerGameItemReward {
+            game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::CompletedWonderStage)),
+            me: true,
+            neighbours: true,
+            coins_per_thing: 0,
+            points_per_thing: 1,
+        }]),
+    };
+}
+
 #[allow(dead_code)]
 impl Card {
-    fn info(&self) -> CardInfo {
+    fn info(&self) -> &CardInfo {
         match self {
-            Card::LumberYard => CardInfo {
-                name: "Lumber Yard",
-                age: Age::First,
-                players_needed: vec![3, 4],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::wood(1)]),
-            },
-
-            Card::StonePit => CardInfo {
-                name: "Stone Pit",
-                age: Age::First,
-                players_needed: vec![3, 5],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::stone(1)]),
-            },
-
-            Card::ClayPool => CardInfo {
-                name: "Clay Pool",
-                age: Age::First,
-                players_needed: vec![3, 5],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::clay(1)]),
-            },
-
-            Card::OreVein => CardInfo {
-                name: "Ore Vein",
-                age: Age::First,
-                players_needed: vec![3, 4],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::ore(1)]),
-            },
-
-            Card::TreeFarm => CardInfo {
-                name: "Tree Farm",
-                age: Age::First,
-                players_needed: vec![6],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::clay(1)]),
-            },
-
-            Card::Excavation => CardInfo {
-                name: "Excavation",
-                age: Age::First,
-                players_needed: vec![4],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::clay(1)]),
-            },
-
-            Card::ClayPit => CardInfo {
-                name: "Clay Pit",
-                age: Age::First,
-                players_needed: vec![3],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::clay(1), Resources::ore(1)]),
-            },
-
-            Card::TimberYard => CardInfo {
-                name: "Timber Yard",
-                age: Age::First,
-                players_needed: vec![3],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::wood(1)]),
-            },
-
-            Card::ForestCave => CardInfo {
-                name: "Forest Cave",
-                age: Age::First,
-                players_needed: vec![5],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::ore(1)]),
-            },
-
-            Card::Mine => CardInfo {
-                name: "Mine",
-                age: Age::First,
-                players_needed: vec![6],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::ore(1), Resources::stone(1)]),
-            },
-
-            Card::Loom1 => CardInfo {
-                name: "Loom",
-                age: Age::First,
-                players_needed: vec![3, 6],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Grey,
-                power: Power::PurchasableProducer(vec![Resources::loom(1)]),
-            },
-
-            Card::Glassworks1 => CardInfo {
-                name: "Glassworks",
-                age: Age::First,
-                players_needed: vec![3, 6],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Grey,
-                power: Power::PurchasableProducer(vec![Resources::glass(1)]),
-            },
-
-            Card::Press1 => CardInfo {
-                name: "Press",
-                age: Age::First,
-                players_needed: vec![3, 6],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Grey,
-                power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
-            },
-
-            Card::Pawnshop => CardInfo {
-                name: "Pawnshop",
-                age: Age::First,
-                players_needed: vec![4, 7],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(3),
-            },
-
-            Card::Baths => CardInfo {
-                name: "Baths",
-                age: Age::First,
-                players_needed: vec![3, 7],
-                cost: Resources::stone(1),
-                chains_to: vec![Card::Aqueduct],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(3),
-            },
-
-            Card::Altar => CardInfo {
-                name: "Altar",
-                age: Age::First,
-                players_needed: vec![3, 5],
-                cost: Resources::free(),
-                chains_to: vec![Card::Temple],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(2),
-            },
-
-            Card::Theater => CardInfo {
-                name: "Theater",
-                age: Age::First,
-                players_needed: vec![3, 6],
-                cost: Resources::free(),
-                chains_to: vec![Card::Statue],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(2),
-            },
-
-            Card::Tavern => CardInfo {
-                name: "Tavern",
-                age: Age::First,
-                players_needed: vec![4, 5, 7],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::Coins(5),
-            },
-
-            Card::EastTradingPost => CardInfo {
-                name: "East Trading Post",
-                age: Age::First,
-                players_needed: vec![3, 7],
-                cost: Resources::free(),
-                chains_to: vec![Card::Forum],
-                colour: Colour::Yellow,
-                power: Power::BuyBrownAntiClockwise,
-            },
-
-            Card::WestTradingPost => CardInfo {
-                name: "West Trading Post",
-                age: Age::First,
-                players_needed: vec![3, 7],
-                cost: Resources::free(),
-                chains_to: vec![Card::Forum],
-                colour: Colour::Yellow,
-                power: Power::BuyBrownClockwise,
-            },
-
-            Card::Marketplace => CardInfo {
-                name: "Marketplace",
-                age: Age::First,
-                players_needed: vec![3, 6],
-                cost: Resources::free(),
-                chains_to: vec![Card::Caravansery],
-                colour: Colour::Yellow,
-                power: Power::BuyGrey,
-            },
-
-            Card::Apothecary => CardInfo {
-                name: "Apothecary",
-                age: Age::First,
-                players_needed: vec![3, 5],
-                cost: Resources::loom(1),
-                chains_to: vec![Card::Stables, Card::Dispensary],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Compass]),
-            },
-
-            Card::Workshop => CardInfo {
-                name: "Workshop",
-                age: Age::First,
-                players_needed: vec![3, 7],
-                cost: Resources::glass(1),
-                chains_to: vec![Card::ArcheryRange, Card::Laboratory],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Cog]),
-            },
-
-            Card::Scriptorium => CardInfo {
-                name: "Scriptorium",
-                age: Age::First,
-                players_needed: vec![3, 4],
-                cost: Resources::papyrus(1),
-                chains_to: vec![Card::Courthouse, Card::Library],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Tablet]),
-            },
-
-            Card::Stockade => CardInfo {
-                name: "Stockade",
-                age: Age::First,
-                players_needed: vec![3, 7],
-                cost: Resources::wood(1),
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(1),
-            },
-
-            Card::Barracks => CardInfo {
-                name: "Barracks",
-                age: Age::First,
-                players_needed: vec![3, 5],
-                cost: Resources::ore(1),
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(1),
-            },
-
-            Card::GuardTower => CardInfo {
-                name: "Guard Tower",
-                age: Age::First,
-                players_needed: vec![3, 4],
-                cost: Resources::clay(1),
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(1),
-            },
-
-            Card::Sawmill => CardInfo {
-                name: "Sawmill",
-                age: Age::Second,
-                players_needed: vec![3, 4],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::wood(2)]),
-            },
-
-            Card::Quarry => CardInfo {
-                name: "Quarry",
-                age: Age::Second,
-                players_needed: vec![3, 4],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::stone(2)]),
-            },
-
-            Card::Brickyard => CardInfo {
-                name: "Brickyard",
-                age: Age::Second,
-                players_needed: vec![3, 4],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::clay(2)]),
-            },
-
-            Card::Foundry => CardInfo {
-                name: "Foundry",
-                age: Age::Second,
-                players_needed: vec![3, 4],
-                cost: Resources::coins(1),
-                chains_to: vec![],
-                colour: Colour::Brown,
-                power: Power::PurchasableProducer(vec![Resources::ore(2)]),
-            },
-
-            Card::Loom2 => CardInfo {
-                name: "Loom",
-                age: Age::Second,
-                players_needed: vec![3, 5],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Grey,
-                power: Power::PurchasableProducer(vec![Resources::loom(1)]),
-            },
-
-            Card::Glassworks2 => CardInfo {
-                name: "Glassworks",
-                age: Age::Second,
-                players_needed: vec![3, 5],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Grey,
-                power: Power::PurchasableProducer(vec![Resources::glass(1)]),
-            },
-
-            Card::Press2 => CardInfo {
-                name: "Press",
-                age: Age::Second,
-                players_needed: vec![3, 5],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Grey,
-                power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
-            },
-
-            Card::Aqueduct => CardInfo {
-                name: "Aqueduct",
-                age: Age::Second,
-                players_needed: vec![3, 7],
-                cost: Resources::stone(3),
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(5),
-            },
-
-            Card::Temple => CardInfo {
-                name: "Temple",
-                age: Age::Second,
-                players_needed: vec![3, 6],
-                cost: Resources {
-                    wood: 1,
-                    clay: 1,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::Pantheon],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(3),
-            },
-
-            Card::Statue => CardInfo {
-                name: "Statue",
-                age: Age::Second,
-                players_needed: vec![3, 7],
-                cost: Resources {
-                    wood: 1,
-                    ore: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::Gardens],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(4),
-            },
-
-            Card::Courthouse => CardInfo {
-                name: "Courthouse",
-                age: Age::Second,
-                players_needed: vec![3, 5],
-                cost: Resources {
-                    clay: 2,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(4),
-            },
-
-            Card::Forum => CardInfo {
-                name: "Forum",
-                age: Age::Second,
-                players_needed: vec![3, 6, 7],
-                cost: Resources::clay(2),
-                chains_to: vec![Card::Haven],
-                colour: Colour::Yellow,
-                power: Power::Producer(vec![Resources::loom(1), Resources::glass(1), Resources::papyrus(1)]),
-            },
-
-            Card::Caravansery => CardInfo {
-                name: "Caravansery",
-                age: Age::Second,
-                players_needed: vec![3, 5, 6],
-                cost: Resources::wood(2),
-                chains_to: vec![Card::Lighthouse],
-                colour: Colour::Yellow,
-                power: Power::Producer(vec![
-                    Resources::wood(1),
-                    Resources::stone(1),
-                    Resources::ore(1),
-                    Resources::clay(1),
-                ]),
-            },
-
-            Card::Vineyard => CardInfo {
-                name: "Vineyard",
-                age: Age::Second,
-                players_needed: vec![3, 6],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Brown, true, true, 1, 0),
-            },
-
-            Card::Bazar => CardInfo {
-                name: "Bazar",
-                age: Age::Second,
-                players_needed: vec![4, 7],
-                cost: Resources::free(),
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Grey, true, true, 2, 0),
-            },
-
-            Card::Dispensary => CardInfo {
-                name: "Dispensary",
-                age: Age::Second,
-                players_needed: vec![3, 4],
-                cost: Resources {
-                    ore: 2,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::Arena, Card::Lodge],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Compass]),
-            },
-
-            Card::Laboratory => CardInfo {
-                name: "Laboratory",
-                age: Age::Second,
-                players_needed: vec![3, 5],
-                cost: Resources {
-                    clay: 2,
-                    papyrus: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::SiegeWorkshop, Card::Observatory],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Cog]),
-            },
-
-            Card::Library => CardInfo {
-                name: "Library",
-                age: Age::Second,
-                players_needed: vec![3, 6],
-                cost: Resources {
-                    stone: 2,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::Senate, Card::University],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Tablet]),
-            },
-
-            Card::School => CardInfo {
-                name: "School",
-                age: Age::Second,
-                players_needed: vec![3, 7],
-                cost: Resources {
-                    wood: 1,
-                    papyrus: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::Academy, Card::Study],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Tablet]),
-            },
-
-            Card::Walls => CardInfo {
-                name: "Walls",
-                age: Age::Second,
-                players_needed: vec![3, 7],
-                cost: Resources::stone(3),
-                chains_to: vec![Card::Fortifications],
-                colour: Colour::Red,
-                power: Power::Shields(2),
-            },
-
-            Card::TrainingGround => CardInfo {
-                name: "Training Ground",
-                age: Age::Second,
-                players_needed: vec![4, 6, 7],
-                cost: Resources {
-                    wood: 1,
-                    ore: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![Card::Circus],
-                colour: Colour::Red,
-                power: Power::Shields(2),
-            },
-
-            Card::Stables => CardInfo {
-                name: "Stables",
-                age: Age::Second,
-                players_needed: vec![3, 5],
-                cost: Resources {
-                    ore: 1,
-                    clay: 1,
-                    wood: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(2),
-            },
-
-            Card::ArcheryRange => CardInfo {
-                name: "Archery Range",
-                age: Age::Second,
-                players_needed: vec![3, 6],
-                cost: Resources {
-                    wood: 2,
-                    ore: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(2),
-            },
-
-            Card::Pantheon => CardInfo {
-                name: "Pantheon",
-                age: Age::Third,
-                players_needed: vec![3, 6],
-                cost: Resources {
-                    clay: 2,
-                    ore: 1,
-                    papyrus: 1,
-                    loom: 1,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(7),
-            },
-
-            Card::Gardens => CardInfo {
-                name: "Gardens",
-                age: Age::Third,
-                players_needed: vec![3, 4],
-                cost: Resources {
-                    wood: 2,
-                    clay: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(5),
-            },
-
-            Card::TownHall => CardInfo {
-                name: "Town Hall",
-                age: Age::Third,
-                players_needed: vec![3, 5, 6],
-                cost: Resources {
-                    glass: 1,
-                    ore: 1,
-                    stone: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(6),
-            },
-
-            Card::Palace => CardInfo {
-                name: "Palace",
-                age: Age::Third,
-                players_needed: vec![3, 7],
-                cost: Resources {
-                    glass: 1,
-                    papyrus: 1,
-                    loom: 1,
-                    clay: 1,
-                    wood: 1,
-                    ore: 1,
-                    stone: 1,
-                    coins: 0,
-                },
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(8),
-            },
-
-            Card::Senate => CardInfo {
-                name: "Senate",
-                age: Age::Third,
-                players_needed: vec![3, 5],
-                cost: Resources {
-                    ore: 1,
-                    stone: 1,
-                    wood: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Blue,
-                power: Power::VictoryPoints(6),
-            },
-
-            Card::Haven => CardInfo {
-                name: "Haven",
-                age: Age::Third,
-                players_needed: vec![3, 4],
-                cost: Resources {
-                    loom: 1,
-                    ore: 1,
-                    wood: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Brown, true, false, 1, 1),
-            },
-
-            Card::Lighthouse => CardInfo {
-                name: "Lighthouse",
-                age: Age::Third,
-                players_needed: vec![3, 6],
-                cost: Resources {
-                    glass: 1,
-                    stone: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Yellow, true, false, 1, 1),
-            },
-
-            Card::ChamberOfCommerce => CardInfo {
-                name: "Chamber Of Commerce",
-                age: Age::Third,
-                players_needed: vec![4, 6],
-                cost: Resources {
-                    clay: 2,
-                    papyrus: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::per_card_reward(Colour::Grey, true, false, 2, 2),
-            },
-
-            Card::Arena => CardInfo {
-                name: "Arena",
-                age: Age::Third,
-                players_needed: vec![3, 5, 7],
-                cost: Resources {
-                    ore: 1,
-                    stone: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Yellow,
-                power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::CompletedWonderStage)),
-                    me: true,
-                    neighbours: false,
-                    coins_per_thing: 3,
-                    points_per_thing: 1,
-                }]),
-            },
-
-            Card::Lodge => CardInfo {
-                name: "Lodge",
-                age: Age::Third,
-                players_needed: vec![3, 6],
-                cost: Resources {
-                    clay: 2,
-                    loom: 1,
-                    papyrus: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Compass]),
-            },
-
-            Card::Observatory => CardInfo {
-                name: "Observatory",
-                age: Age::Third,
-                players_needed: vec![3, 7],
-                cost: Resources {
-                    ore: 2,
-                    glass: 1,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Cog]),
-            },
-
-            Card::University => CardInfo {
-                name: "University",
-                age: Age::Third,
-                players_needed: vec![3, 4],
-                cost: Resources {
-                    wood: 2,
-                    papyrus: 1,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Tablet]),
-            },
-
-            Card::Academy => CardInfo {
-                name: "Academy",
-                age: Age::Third,
-                players_needed: vec![3, 7],
-                cost: Resources {
-                    stone: 3,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Compass]),
-            },
-
-            Card::Study => CardInfo {
-                name: "Study",
-                age: Age::Third,
-                players_needed: vec![3, 5],
-                cost: Resources {
-                    wood: 1,
-                    papyrus: 1,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Green,
-                power: Power::Science(vec![ScienceItem::Cog]),
-            },
-
-            Card::Fortifications => CardInfo {
-                name: "Fortifications",
-                age: Age::Third,
-                players_needed: vec![3, 7],
-                cost: Resources {
-                    stone: 1,
-                    ore: 3,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(3),
-            },
-
-            Card::Circus => CardInfo {
-                name: "Circus",
-                age: Age::Third,
-                players_needed: vec![4, 5, 6],
-                cost: Resources {
-                    stone: 3,
-                    ore: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(3),
-            },
-
-            Card::Arsenal => CardInfo {
-                name: "Arsenal",
-                age: Age::Third,
-                players_needed: vec![3, 4, 7],
-                cost: Resources {
-                    ore: 1,
-                    wood: 2,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(3),
-            },
-
-            Card::SiegeWorkshop => CardInfo {
-                name: "Siege Workshop",
-                age: Age::Third,
-                players_needed: vec![3, 5],
-                cost: Resources {
-                    wood: 1,
-                    clay: 3,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Red,
-                power: Power::Shields(3),
-            },
-
-            Card::WorkersGuild => CardInfo {
-                name: "Workers Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    ore: 2,
-                    clay: 1,
-                    stone: 1,
-                    wood: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Brown, false, true, 0, 1),
-            },
-
-            Card::CraftsmensGuild => CardInfo {
-                name: "Craftsmens Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    ore: 2,
-                    stone: 2,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Grey, false, true, 0, 2),
-            },
-
-            Card::TradersGuild => CardInfo {
-                name: "Traders Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    loom: 1,
-                    papyrus: 1,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Yellow, false, true, 0, 1),
-            },
-
-            Card::PhilosophersGuild => CardInfo {
-                name: "Philosophers Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    clay: 3,
-                    loom: 1,
-                    papyrus: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Green, false, true, 0, 1),
-            },
-
-            Card::SpiesGuild => CardInfo {
-                name: "Spies Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    clay: 3,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Red, false, true, 0, 2),
-            },
-
-            Card::StrategistsGuild => CardInfo {
-                name: "Strategists Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    ore: 2,
-                    stone: 1,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::DefeatToken)),
-                    me: false,
-                    neighbours: true,
-                    coins_per_thing: 0,
-                    points_per_thing: 1,
-                }]),
-            },
-
-            Card::ShipownersGuild => CardInfo {
-                name: "Shipowners Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    wood: 3,
-                    papyrus: 1,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| {
-                        matches!(game_item,
-                        CountableGameItem::CountableCard(card) if
-                            card.info().colour == Colour::Brown ||
-                            card.info().colour == Colour::Grey ||
-                            card.info().colour == Colour::Purple)
-                    }),
-                    me: true,
-                    neighbours: false,
-                    coins_per_thing: 0,
-                    points_per_thing: 1,
-                }]),
-            },
-
-            Card::ScientistsGuild => CardInfo {
-                name: "Scientists Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    wood: 2,
-                    ore: 2,
-                    papyrus: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::Science(vec![ScienceItem::Compass, ScienceItem::Cog, ScienceItem::Tablet]),
-            },
-
-            Card::MagistratesGuild => CardInfo {
-                name: "Migistrates Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    wood: 3,
-                    stone: 1,
-                    loom: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::per_card_reward(Colour::Blue, false, true, 0, 1),
-            },
-
-            Card::BuildersGuild => CardInfo {
-                name: "Builders Guild",
-                age: Age::Third,
-                players_needed: vec![3],
-                cost: Resources {
-                    stone: 2,
-                    clay: 2,
-                    glass: 1,
-                    ..Default::default()
-                },
-                chains_to: vec![],
-                colour: Colour::Purple,
-                power: Power::PerGameItemRewards(vec![PerGameItemReward {
-                    game_item: Box::new(|game_item| matches!(game_item, CountableGameItem::CompletedWonderStage)),
-                    me: true,
-                    neighbours: true,
-                    coins_per_thing: 0,
-                    points_per_thing: 1,
-                }]),
-            },
+            Card::LumberYard => &LUMBER_YARD,
+            Card::StonePit => &STONE_PIT,
+            Card::ClayPool => &CLAY_POOL,
+            Card::OreVein => &ORE_VEIN,
+            Card::TreeFarm => &TREE_FARM,
+            Card::Excavation => &EXCAVATION,
+            Card::ClayPit => &CLAY_PIT,
+            Card::TimberYard => &TIMBER_YARD,
+            Card::ForestCave => &FOREST_CAVE,
+            Card::Mine => &MINE,
+            Card::Loom1 => &LOOM1,
+            Card::Glassworks1 => &GLASSWORKS1,
+            Card::Press1 => &PRESS1,
+            Card::Pawnshop => &PAWNSHOP,
+            Card::Baths => &BATHS,
+            Card::Altar => &ALTAR,
+            Card::Theater => &THEATER,
+            Card::Tavern => &TAVERN,
+            Card::EastTradingPost => &EAST_TRADING_POST,
+            Card::WestTradingPost => &WEST_TRADING_POST,
+            Card::Marketplace => &MARKETPLACE,
+            Card::Apothecary => &APOTHECARY,
+            Card::Workshop => &WORKSHOP,
+            Card::Scriptorium => &SCRIPTORIUM,
+            Card::Stockade => &STOCKADE,
+            Card::Barracks => &BARRACKS,
+            Card::GuardTower => &GUARD_TOWER,
+            Card::Sawmill => &SAWMILL,
+            Card::Quarry => &QUARRY,
+            Card::Brickyard => &BRICKYARD,
+            Card::Foundry => &FOUNDRY,
+            Card::Loom2 => &LOOM2,
+            Card::Glassworks2 => &GLASSWORKS2,
+            Card::Press2 => &PRESS2,
+            Card::Aqueduct => &AQUEDUCT,
+            Card::Temple => &TEMPLE,
+            Card::Statue => &STATUE,
+            Card::Courthouse => &COURTHOUSE,
+            Card::Forum => &FORUM,
+            Card::Caravansery => &CARAVANSERY,
+            Card::Vineyard => &VINEYARD,
+            Card::Bazar => &BAZAR,
+            Card::Dispensary => &DISPENSARY,
+            Card::Laboratory => &LABORATORY,
+            Card::Library => &LIBRARY,
+            Card::School => &SCHOOL,
+            Card::Walls => &WALLS,
+            Card::TrainingGround => &TRAINING_GROUND,
+            Card::Stables => &STABLES,
+            Card::ArcheryRange => &ARCHERY_RANGE,
+            Card::Pantheon => &PANTHEON,
+            Card::Gardens => &GARDENS,
+            Card::TownHall => &TOWN_HALL,
+            Card::Palace => &PALACE,
+            Card::Senate => &SENATE,
+            Card::Haven => &HAVEN,
+            Card::Lighthouse => &LIGHTHOUSE,
+            Card::ChamberOfCommerce => &CHAMBER_OF_COMMERCE,
+            Card::Arena => &ARENA,
+            Card::Lodge => &LODGE,
+            Card::Observatory => &OBSERVATORY,
+            Card::University => &UNIVERSITY,
+            Card::Academy => &ACADEMY,
+            Card::Study => &STUDY,
+            Card::Fortifications => &FORTIFICATIONS,
+            Card::Circus => &CIRCUS,
+            Card::Arsenal => &ARSENAL,
+            Card::SiegeWorkshop => &SIEGE_WORKSHOP,
+            Card::WorkersGuild => &WORKERS_GUILD,
+            Card::CraftsmensGuild => &CRAFTSMENS_GUILD,
+            Card::TradersGuild => &TRADERS_GUILD,
+            Card::PhilosophersGuild => &PHILOSOPHERS_GUILD,
+            Card::SpiesGuild => &SPIES_GUILD,
+            Card::StrategistsGuild => &STRATEGISTS_GUILD,
+            Card::ShipownersGuild => &SHIPOWNERS_GUILD,
+            Card::ScientistsGuild => &SCIENTISTS_GUILD,
+            Card::MagistratesGuild => &MAGISTRATES_GUILD,
+            Card::BuildersGuild => &BUILDERS_GUILD,
         }
     }
 
-    pub fn age(&self) -> Age {
-        self.info().age
+    pub fn age(&self) -> &Age {
+        &self.info().age
     }
 
-    pub fn players_needed(&self) -> Vec<u32> {
-        self.info().players_needed
+    pub fn players_needed(&self) -> &Vec<u32> {
+        &self.info().players_needed
     }
 
-    pub fn cost(&self) -> Resources {
-        self.info().cost
+    pub fn cost(&self) -> &Resources {
+        &self.info().cost
     }
 
-    pub fn chains_to(&self) -> Vec<Card> {
-        self.info().chains_to
+    pub fn chains_to(&self) -> &Vec<Card> {
+        &self.info().chains_to
     }
 
-    pub fn colour(&self) -> Colour {
-        self.info().colour
+    pub fn colour(&self) -> &Colour {
+        &self.info().colour
     }
 
-    pub fn power(&self) -> Power {
-        self.info().power
+    pub fn power(&self) -> &Power {
+        &self.info().power
     }
 
     // returns the immediate strength
     pub fn immediate_strength(&self) -> f32 {
         match self.power() {
-            Power::VictoryPoints(points) => points as f32,
+            Power::VictoryPoints(points) => *points as f32,
             _ => 0.0,
         }
     }
@@ -1222,10 +1233,10 @@ pub fn new_deck_without(age: &Age, player_count: u32, missing: &HashMap<Card, u3
     // Add all cards with the correct age and number of players needed, added guilds to a separate vector for the time
     // being.
     for card in Card::iter() {
-        if card.age() == *age {
+        if card.age() == age {
             let num_cards = card.players_needed().iter().filter(|i| *i <= &player_count).count() as u32;
             for _ in 0..(num_cards - missing.get(&card).unwrap_or(&0)) {
-                if card.colour() == Colour::Purple {
+                if card.colour() == &Colour::Purple {
                     guilds.push(card);
                 } else {
                     deck.push(card);
@@ -1234,7 +1245,7 @@ pub fn new_deck_without(age: &Age, player_count: u32, missing: &HashMap<Card, u3
         }
     }
 
-    let missing_guild_count = missing.keys().filter(|card| card.colour() == Colour::Purple).count();
+    let missing_guild_count = missing.keys().filter(|card| card.colour() == &Colour::Purple).count();
     let guild_count = (player_count + 2) - missing_guild_count as u32;
 
     // Shuffle the guilds separately and add player_count + 2 random ones to the deck.
