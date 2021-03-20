@@ -281,7 +281,7 @@ impl Player {
 
         // Get the cost of the card, and subtract the Wonder starting resources and any non-choice resources owned by
         // the player.
-        let mut required_resources = card.cost();
+        let mut required_resources = card.cost().clone();
         required_resources -= &self.wonder.starting_resource();
         required_resources.coins -= self.coins;
         for card in &self.built_structures {
