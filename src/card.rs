@@ -6,10 +6,11 @@ use rand::thread_rng;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::power::PerGameItemReward;
 use crate::power::Power;
 use crate::power::{CountableGameItem, ScienceItem};
-use crate::resources::Resources;
+use crate::power::{PerGameItemReward, ProducedResources};
+use crate::resources::Cost;
+use crate::resources::Resource;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
@@ -161,7 +162,7 @@ struct CardInfo<'a> {
     name: &'a str,
     age: Age,
     players_needed: Vec<u32>,
-    cost: Resources,
+    cost: Cost,
     chains_to: Vec<Card>,
     colour: Colour,
     power: Power,
@@ -172,124 +173,124 @@ lazy_static! {
         name: "Lumber Yard",
         age: Age::First,
         players_needed: vec![3, 4],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::wood(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Wood)),
     };
     static ref STONE_PIT: CardInfo<'static> = CardInfo {
         name: "Stone Pit",
         age: Age::First,
         players_needed: vec![3, 5],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::stone(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Stone)),
     };
     static ref CLAY_POOL: CardInfo<'static> = CardInfo {
         name: "Clay Pool",
         age: Age::First,
         players_needed: vec![3, 5],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::clay(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Clay)),
     };
     static ref ORE_VEIN: CardInfo<'static> = CardInfo {
         name: "Ore Vein",
         age: Age::First,
         players_needed: vec![3, 4],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::ore(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Ore)),
     };
     static ref TREE_FARM: CardInfo<'static> = CardInfo {
         name: "Tree Farm",
         age: Age::First,
         players_needed: vec![6],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::clay(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resource::Wood, Resource::Clay])),
     };
     static ref EXCAVATION: CardInfo<'static> = CardInfo {
         name: "Excavation",
         age: Age::First,
         players_needed: vec![4],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::clay(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resource::Stone, Resource::Clay])),
     };
     static ref CLAY_PIT: CardInfo<'static> = CardInfo {
         name: "Clay Pit",
         age: Age::First,
         players_needed: vec![3],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::clay(1), Resources::ore(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resource::Clay, Resource::Ore])),
     };
     static ref TIMBER_YARD: CardInfo<'static> = CardInfo {
         name: "Timber Yard",
         age: Age::First,
         players_needed: vec![3],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::stone(1), Resources::wood(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resource::Stone, Resource::Wood])),
     };
     static ref FOREST_CAVE: CardInfo<'static> = CardInfo {
         name: "Forest Cave",
         age: Age::First,
         players_needed: vec![5],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::wood(1), Resources::ore(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resource::Wood, Resource::Ore])),
     };
     static ref MINE: CardInfo<'static> = CardInfo {
         name: "Mine",
         age: Age::First,
         players_needed: vec![6],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::ore(1), Resources::stone(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Choice(vec![Resource::Ore, Resource::Stone])),
     };
     static ref LOOM1: CardInfo<'static> = CardInfo {
         name: "Loom",
         age: Age::First,
         players_needed: vec![3, 6],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Grey,
-        power: Power::PurchasableProducer(vec![Resources::loom(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Loom)),
     };
     static ref GLASSWORKS1: CardInfo<'static> = CardInfo {
         name: "Glassworks",
         age: Age::First,
         players_needed: vec![3, 6],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Grey,
-        power: Power::PurchasableProducer(vec![Resources::glass(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Glass)),
     };
     static ref PRESS1: CardInfo<'static> = CardInfo {
         name: "Press",
         age: Age::First,
         players_needed: vec![3, 6],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Grey,
-        power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Papyrus)),
     };
     static ref PAWNSHOP: CardInfo<'static> = CardInfo {
         name: "Pawnshop",
         age: Age::First,
         players_needed: vec![4, 7],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Blue,
         power: Power::VictoryPoints(3),
@@ -298,7 +299,7 @@ lazy_static! {
         name: "Baths",
         age: Age::First,
         players_needed: vec![3, 7],
-        cost: Resources::stone(1),
+        cost: Cost::stone(1),
         chains_to: vec![Card::Aqueduct],
         colour: Colour::Blue,
         power: Power::VictoryPoints(3),
@@ -307,7 +308,7 @@ lazy_static! {
         name: "Altar",
         age: Age::First,
         players_needed: vec![3, 5],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![Card::Temple],
         colour: Colour::Blue,
         power: Power::VictoryPoints(2),
@@ -316,7 +317,7 @@ lazy_static! {
         name: "Theater",
         age: Age::First,
         players_needed: vec![3, 6],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![Card::Statue],
         colour: Colour::Blue,
         power: Power::VictoryPoints(2),
@@ -325,7 +326,7 @@ lazy_static! {
         name: "Tavern",
         age: Age::First,
         players_needed: vec![4, 5, 7],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Yellow,
         power: Power::Coins(5),
@@ -334,7 +335,7 @@ lazy_static! {
         name: "East Trading Post",
         age: Age::First,
         players_needed: vec![3, 7],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![Card::Forum],
         colour: Colour::Yellow,
         power: Power::BuyBrownAntiClockwise,
@@ -343,7 +344,7 @@ lazy_static! {
         name: "West Trading Post",
         age: Age::First,
         players_needed: vec![3, 7],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![Card::Forum],
         colour: Colour::Yellow,
         power: Power::BuyBrownClockwise,
@@ -352,7 +353,7 @@ lazy_static! {
         name: "Marketplace",
         age: Age::First,
         players_needed: vec![3, 6],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![Card::Caravansery],
         colour: Colour::Yellow,
         power: Power::BuyGrey,
@@ -361,7 +362,7 @@ lazy_static! {
         name: "Apothecary",
         age: Age::First,
         players_needed: vec![3, 5],
-        cost: Resources::loom(1),
+        cost: Cost::loom(1),
         chains_to: vec![Card::Stables, Card::Dispensary],
         colour: Colour::Green,
         power: Power::Science(vec![ScienceItem::Compass]),
@@ -370,7 +371,7 @@ lazy_static! {
         name: "Workshop",
         age: Age::First,
         players_needed: vec![3, 7],
-        cost: Resources::glass(1),
+        cost: Cost::glass(1),
         chains_to: vec![Card::ArcheryRange, Card::Laboratory],
         colour: Colour::Green,
         power: Power::Science(vec![ScienceItem::Cog]),
@@ -379,7 +380,7 @@ lazy_static! {
         name: "Scriptorium",
         age: Age::First,
         players_needed: vec![3, 4],
-        cost: Resources::papyrus(1),
+        cost: Cost::papyrus(1),
         chains_to: vec![Card::Courthouse, Card::Library],
         colour: Colour::Green,
         power: Power::Science(vec![ScienceItem::Tablet]),
@@ -388,7 +389,7 @@ lazy_static! {
         name: "Stockade",
         age: Age::First,
         players_needed: vec![3, 7],
-        cost: Resources::wood(1),
+        cost: Cost::wood(1),
         chains_to: vec![],
         colour: Colour::Red,
         power: Power::Shields(1),
@@ -397,7 +398,7 @@ lazy_static! {
         name: "Barracks",
         age: Age::First,
         players_needed: vec![3, 5],
-        cost: Resources::ore(1),
+        cost: Cost::ore(1),
         chains_to: vec![],
         colour: Colour::Red,
         power: Power::Shields(1),
@@ -406,7 +407,7 @@ lazy_static! {
         name: "Guard Tower",
         age: Age::First,
         players_needed: vec![3, 4],
-        cost: Resources::clay(1),
+        cost: Cost::clay(1),
         chains_to: vec![],
         colour: Colour::Red,
         power: Power::Shields(1),
@@ -418,70 +419,70 @@ lazy_static! {
         name: "Sawmill",
         age: Age::Second,
         players_needed: vec![3, 4],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::wood(2)]),
+        power: Power::PurchasableProducer(ProducedResources::Double(Resource::Wood)),
     };
     static ref QUARRY: CardInfo<'static> = CardInfo {
         name: "Quarry",
         age: Age::Second,
         players_needed: vec![3, 4],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::stone(2)]),
+        power: Power::PurchasableProducer(ProducedResources::Double(Resource::Stone)),
     };
     static ref BRICKYARD: CardInfo<'static> = CardInfo {
         name: "Brickyard",
         age: Age::Second,
         players_needed: vec![3, 4],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::clay(2)]),
+        power: Power::PurchasableProducer(ProducedResources::Double(Resource::Clay)),
     };
     static ref FOUNDRY: CardInfo<'static> = CardInfo {
         name: "Foundry",
         age: Age::Second,
         players_needed: vec![3, 4],
-        cost: Resources::coins(1),
+        cost: Cost::coins(1),
         chains_to: vec![],
         colour: Colour::Brown,
-        power: Power::PurchasableProducer(vec![Resources::ore(2)]),
+        power: Power::PurchasableProducer(ProducedResources::Double(Resource::Ore)),
     };
     static ref LOOM2: CardInfo<'static> = CardInfo {
         name: "Loom",
         age: Age::Second,
         players_needed: vec![3, 5],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Grey,
-        power: Power::PurchasableProducer(vec![Resources::loom(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Loom)),
     };
     static ref GLASSWORKS2: CardInfo<'static> = CardInfo {
         name: "Glassworks",
         age: Age::Second,
         players_needed: vec![3, 5],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Grey,
-        power: Power::PurchasableProducer(vec![Resources::glass(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Glass)),
     };
     static ref PRESS2: CardInfo<'static> = CardInfo {
         name: "Press",
         age: Age::Second,
         players_needed: vec![3, 5],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Grey,
-        power: Power::PurchasableProducer(vec![Resources::papyrus(1)]),
+        power: Power::PurchasableProducer(ProducedResources::Single(Resource::Papyrus)),
     };
     static ref AQUEDUCT: CardInfo<'static> = CardInfo {
         name: "Aqueduct",
         age: Age::Second,
         players_needed: vec![3, 7],
-        cost: Resources::stone(3),
+        cost: Cost::stone(3),
         chains_to: vec![],
         colour: Colour::Blue,
         power: Power::VictoryPoints(5),
@@ -490,7 +491,7 @@ lazy_static! {
         name: "Temple",
         age: Age::Second,
         players_needed: vec![3, 6],
-        cost: Resources {
+        cost: Cost {
             wood: 1,
             clay: 1,
             glass: 1,
@@ -504,7 +505,7 @@ lazy_static! {
         name: "Statue",
         age: Age::Second,
         players_needed: vec![3, 7],
-        cost: Resources {
+        cost: Cost {
             wood: 1,
             ore: 2,
             ..Default::default()
@@ -517,7 +518,7 @@ lazy_static! {
         name: "Courthouse",
         age: Age::Second,
         players_needed: vec![3, 5],
-        cost: Resources {
+        cost: Cost {
             clay: 2,
             loom: 1,
             ..Default::default()
@@ -530,30 +531,34 @@ lazy_static! {
         name: "Forum",
         age: Age::Second,
         players_needed: vec![3, 6, 7],
-        cost: Resources::clay(2),
+        cost: Cost::clay(2),
         chains_to: vec![Card::Haven],
         colour: Colour::Yellow,
-        power: Power::Producer(vec![Resources::loom(1), Resources::glass(1), Resources::papyrus(1)]),
+        power: Power::Producer(ProducedResources::Choice(vec![
+            Resource::Loom,
+            Resource::Glass,
+            Resource::Papyrus
+        ])),
     };
     static ref CARAVANSERY: CardInfo<'static> = CardInfo {
         name: "Caravansery",
         age: Age::Second,
         players_needed: vec![3, 5, 6],
-        cost: Resources::wood(2),
+        cost: Cost::wood(2),
         chains_to: vec![Card::Lighthouse],
         colour: Colour::Yellow,
-        power: Power::Producer(vec![
-            Resources::wood(1),
-            Resources::stone(1),
-            Resources::ore(1),
-            Resources::clay(1),
-        ]),
+        power: Power::Producer(ProducedResources::Choice(vec![
+            Resource::Wood,
+            Resource::Stone,
+            Resource::Ore,
+            Resource::Clay,
+        ])),
     };
     static ref VINEYARD: CardInfo<'static> = CardInfo {
         name: "Vineyard",
         age: Age::Second,
         players_needed: vec![3, 6],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Yellow,
         power: Power::per_card_reward(Colour::Brown, true, true, 1, 0),
@@ -562,7 +567,7 @@ lazy_static! {
         name: "Bazar",
         age: Age::Second,
         players_needed: vec![4, 7],
-        cost: Resources::free(),
+        cost: Cost::free(),
         chains_to: vec![],
         colour: Colour::Yellow,
         power: Power::per_card_reward(Colour::Grey, true, true, 2, 0),
@@ -571,7 +576,7 @@ lazy_static! {
         name: "Dispensary",
         age: Age::Second,
         players_needed: vec![3, 4],
-        cost: Resources {
+        cost: Cost {
             ore: 2,
             glass: 1,
             ..Default::default()
@@ -584,7 +589,7 @@ lazy_static! {
         name: "Laboratory",
         age: Age::Second,
         players_needed: vec![3, 5],
-        cost: Resources {
+        cost: Cost {
             clay: 2,
             papyrus: 1,
             ..Default::default()
@@ -597,7 +602,7 @@ lazy_static! {
         name: "Library",
         age: Age::Second,
         players_needed: vec![3, 6],
-        cost: Resources {
+        cost: Cost {
             stone: 2,
             loom: 1,
             ..Default::default()
@@ -610,7 +615,7 @@ lazy_static! {
         name: "School",
         age: Age::Second,
         players_needed: vec![3, 7],
-        cost: Resources {
+        cost: Cost {
             wood: 1,
             papyrus: 1,
             ..Default::default()
@@ -623,7 +628,7 @@ lazy_static! {
         name: "Walls",
         age: Age::Second,
         players_needed: vec![3, 7],
-        cost: Resources::stone(3),
+        cost: Cost::stone(3),
         chains_to: vec![Card::Fortifications],
         colour: Colour::Red,
         power: Power::Shields(2),
@@ -632,7 +637,7 @@ lazy_static! {
         name: "Training Ground",
         age: Age::Second,
         players_needed: vec![4, 6, 7],
-        cost: Resources {
+        cost: Cost {
             wood: 1,
             ore: 2,
             ..Default::default()
@@ -645,7 +650,7 @@ lazy_static! {
         name: "Stables",
         age: Age::Second,
         players_needed: vec![3, 5],
-        cost: Resources {
+        cost: Cost {
             ore: 1,
             clay: 1,
             wood: 1,
@@ -659,7 +664,7 @@ lazy_static! {
         name: "Archery Range",
         age: Age::Second,
         players_needed: vec![3, 6],
-        cost: Resources {
+        cost: Cost {
             wood: 2,
             ore: 1,
             ..Default::default()
@@ -675,7 +680,7 @@ lazy_static! {
         name: "Pantheon",
         age: Age::Third,
         players_needed: vec![3, 6],
-        cost: Resources {
+        cost: Cost {
             clay: 2,
             ore: 1,
             papyrus: 1,
@@ -691,7 +696,7 @@ lazy_static! {
         name: "Gardens",
         age: Age::Third,
         players_needed: vec![3, 4],
-        cost: Resources {
+        cost: Cost {
             wood: 2,
             clay: 2,
             ..Default::default()
@@ -704,7 +709,7 @@ lazy_static! {
         name: "Town Hall",
         age: Age::Third,
         players_needed: vec![3, 5, 6],
-        cost: Resources {
+        cost: Cost {
             glass: 1,
             ore: 1,
             stone: 2,
@@ -718,7 +723,7 @@ lazy_static! {
         name: "Palace",
         age: Age::Third,
         players_needed: vec![3, 7],
-        cost: Resources {
+        cost: Cost {
             glass: 1,
             papyrus: 1,
             loom: 1,
@@ -736,7 +741,7 @@ lazy_static! {
         name: "Senate",
         age: Age::Third,
         players_needed: vec![3, 5],
-        cost: Resources {
+        cost: Cost {
             ore: 1,
             stone: 1,
             wood: 2,
@@ -750,7 +755,7 @@ lazy_static! {
         name: "Haven",
         age: Age::Third,
         players_needed: vec![3, 4],
-        cost: Resources {
+        cost: Cost {
             loom: 1,
             ore: 1,
             wood: 1,
@@ -764,7 +769,7 @@ lazy_static! {
         name: "Lighthouse",
         age: Age::Third,
         players_needed: vec![3, 6],
-        cost: Resources {
+        cost: Cost {
             glass: 1,
             stone: 1,
             ..Default::default()
@@ -777,7 +782,7 @@ lazy_static! {
         name: "Chamber Of Commerce",
         age: Age::Third,
         players_needed: vec![4, 6],
-        cost: Resources {
+        cost: Cost {
             clay: 2,
             papyrus: 1,
             ..Default::default()
@@ -790,7 +795,7 @@ lazy_static! {
         name: "Arena",
         age: Age::Third,
         players_needed: vec![3, 5, 7],
-        cost: Resources {
+        cost: Cost {
             ore: 1,
             stone: 2,
             ..Default::default()
@@ -809,7 +814,7 @@ lazy_static! {
         name: "Lodge",
         age: Age::Third,
         players_needed: vec![3, 6],
-        cost: Resources {
+        cost: Cost {
             clay: 2,
             loom: 1,
             papyrus: 1,
@@ -823,7 +828,7 @@ lazy_static! {
         name: "Observatory",
         age: Age::Third,
         players_needed: vec![3, 7],
-        cost: Resources {
+        cost: Cost {
             ore: 2,
             glass: 1,
             loom: 1,
@@ -837,7 +842,7 @@ lazy_static! {
         name: "University",
         age: Age::Third,
         players_needed: vec![3, 4],
-        cost: Resources {
+        cost: Cost {
             wood: 2,
             papyrus: 1,
             glass: 1,
@@ -851,7 +856,7 @@ lazy_static! {
         name: "Academy",
         age: Age::Third,
         players_needed: vec![3, 7],
-        cost: Resources {
+        cost: Cost {
             stone: 3,
             glass: 1,
             ..Default::default()
@@ -864,7 +869,7 @@ lazy_static! {
         name: "Study",
         age: Age::Third,
         players_needed: vec![3, 5],
-        cost: Resources {
+        cost: Cost {
             wood: 1,
             papyrus: 1,
             loom: 1,
@@ -878,7 +883,7 @@ lazy_static! {
         name: "Fortifications",
         age: Age::Third,
         players_needed: vec![3, 7],
-        cost: Resources {
+        cost: Cost {
             stone: 1,
             ore: 3,
             ..Default::default()
@@ -891,7 +896,7 @@ lazy_static! {
         name: "Circus",
         age: Age::Third,
         players_needed: vec![4, 5, 6],
-        cost: Resources {
+        cost: Cost {
             stone: 3,
             ore: 1,
             ..Default::default()
@@ -904,7 +909,7 @@ lazy_static! {
         name: "Arsenal",
         age: Age::Third,
         players_needed: vec![3, 4, 7],
-        cost: Resources {
+        cost: Cost {
             ore: 1,
             wood: 2,
             loom: 1,
@@ -918,7 +923,7 @@ lazy_static! {
         name: "Siege Workshop",
         age: Age::Third,
         players_needed: vec![3, 5],
-        cost: Resources {
+        cost: Cost {
             wood: 1,
             clay: 3,
             ..Default::default()
@@ -931,7 +936,7 @@ lazy_static! {
         name: "Workers Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             ore: 2,
             clay: 1,
             stone: 1,
@@ -946,7 +951,7 @@ lazy_static! {
         name: "Craftsmens Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             ore: 2,
             stone: 2,
             ..Default::default()
@@ -959,7 +964,7 @@ lazy_static! {
         name: "Traders Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             loom: 1,
             papyrus: 1,
             glass: 1,
@@ -973,7 +978,7 @@ lazy_static! {
         name: "Philosophers Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             clay: 3,
             loom: 1,
             papyrus: 1,
@@ -987,7 +992,7 @@ lazy_static! {
         name: "Spies Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             clay: 3,
             glass: 1,
             ..Default::default()
@@ -1000,7 +1005,7 @@ lazy_static! {
         name: "Strategists Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             ore: 2,
             stone: 1,
             loom: 1,
@@ -1020,7 +1025,7 @@ lazy_static! {
         name: "Shipowners Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             wood: 3,
             papyrus: 1,
             glass: 1,
@@ -1046,7 +1051,7 @@ lazy_static! {
         name: "Scientists Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             wood: 2,
             ore: 2,
             papyrus: 1,
@@ -1060,7 +1065,7 @@ lazy_static! {
         name: "Migistrates Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             wood: 3,
             stone: 1,
             loom: 1,
@@ -1074,7 +1079,7 @@ lazy_static! {
         name: "Builders Guild",
         age: Age::Third,
         players_needed: vec![3],
-        cost: Resources {
+        cost: Cost {
             stone: 2,
             clay: 2,
             glass: 1,
@@ -1185,7 +1190,7 @@ impl Card {
         &self.info().players_needed
     }
 
-    pub fn cost(&self) -> &Resources {
+    pub fn cost(&self) -> &Cost {
         &self.info().cost
     }
 

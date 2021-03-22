@@ -1,4 +1,4 @@
-use crate::resources::Resources;
+use crate::resources::{Cost, Resource};
 use strum_macros::EnumIter;
 
 #[derive(Debug, EnumIter, Copy, Clone, Eq, PartialEq)]
@@ -40,15 +40,15 @@ impl WonderType {
         }
     }
 
-    fn starting_resource(&self) -> Resources {
+    fn starting_resource(&self) -> Resource {
         match self {
-            WonderType::ColossusOfRhodes => Resources::ore(1),
-            WonderType::LighthouseOfAlexandria => Resources::glass(1),
-            WonderType::TempleOfArtemis => Resources::papyrus(1),
-            WonderType::HangingGardensOfBabylon => Resources::clay(1),
-            WonderType::StatueOfZeus => Resources::wood(1),
-            WonderType::MausoleumOfHalicarnassus => Resources::loom(1),
-            WonderType::PyramidsOfGiza => Resources::stone(1),
+            WonderType::ColossusOfRhodes => Resource::Ore,
+            WonderType::LighthouseOfAlexandria => Resource::Glass,
+            WonderType::TempleOfArtemis => Resource::Papyrus,
+            WonderType::HangingGardensOfBabylon => Resource::Clay,
+            WonderType::StatueOfZeus => Resource::Wood,
+            WonderType::MausoleumOfHalicarnassus => Resource::Loom,
+            WonderType::PyramidsOfGiza => Resource::Stone,
         }
     }
 }
@@ -59,29 +59,29 @@ impl WonderBoard {
         self.wonder_type.name()
     }
 
-    pub fn starting_resource(&self) -> Resources {
+    pub fn starting_resource(&self) -> Resource {
         self.wonder_type.starting_resource()
     }
 
-    pub fn cost(&self, position: u32) -> Resources {
+    pub fn cost(&self, position: u32) -> Cost {
         match (&self.wonder_type, &self.wonder_side, position) {
-            (WonderType::ColossusOfRhodes, WonderSide::A, 0) => Resources::wood(2),
-            (WonderType::ColossusOfRhodes, WonderSide::A, 1) => Resources::clay(3),
-            (WonderType::ColossusOfRhodes, WonderSide::A, 2) => Resources::ore(4),
+            (WonderType::ColossusOfRhodes, WonderSide::A, 0) => Cost::wood(2),
+            (WonderType::ColossusOfRhodes, WonderSide::A, 1) => Cost::clay(3),
+            (WonderType::ColossusOfRhodes, WonderSide::A, 2) => Cost::ore(4),
             (WonderType::ColossusOfRhodes, WonderSide::A, _) => panic!(),
 
-            (WonderType::ColossusOfRhodes, WonderSide::B, 0) => Resources::stone(3),
-            (WonderType::ColossusOfRhodes, WonderSide::B, 1) => Resources::ore(4),
+            (WonderType::ColossusOfRhodes, WonderSide::B, 0) => Cost::stone(3),
+            (WonderType::ColossusOfRhodes, WonderSide::B, 1) => Cost::ore(4),
             (WonderType::ColossusOfRhodes, WonderSide::B, _) => panic!(),
 
-            (WonderType::LighthouseOfAlexandria, WonderSide::A, 0) => Resources::stone(2),
-            (WonderType::LighthouseOfAlexandria, WonderSide::A, 1) => Resources::ore(2),
-            (WonderType::LighthouseOfAlexandria, WonderSide::A, 2) => Resources::glass(2),
+            (WonderType::LighthouseOfAlexandria, WonderSide::A, 0) => Cost::stone(2),
+            (WonderType::LighthouseOfAlexandria, WonderSide::A, 1) => Cost::ore(2),
+            (WonderType::LighthouseOfAlexandria, WonderSide::A, 2) => Cost::glass(2),
             (WonderType::LighthouseOfAlexandria, WonderSide::A, _) => panic!(),
 
-            (WonderType::LighthouseOfAlexandria, WonderSide::B, 0) => Resources::clay(2),
-            (WonderType::LighthouseOfAlexandria, WonderSide::B, 1) => Resources::wood(2),
-            (WonderType::LighthouseOfAlexandria, WonderSide::B, 2) => Resources::stone(3),
+            (WonderType::LighthouseOfAlexandria, WonderSide::B, 0) => Cost::clay(2),
+            (WonderType::LighthouseOfAlexandria, WonderSide::B, 1) => Cost::wood(2),
+            (WonderType::LighthouseOfAlexandria, WonderSide::B, 2) => Cost::stone(3),
             (WonderType::LighthouseOfAlexandria, WonderSide::B, _) => panic!(),
 
             _ => todo!(),

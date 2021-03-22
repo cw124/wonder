@@ -5,9 +5,9 @@ use std::mem;
 use crate::action::{Action, ActionOptions, Borrow, Borrowing};
 use crate::card::{Card, Colour};
 use crate::game::VisibleGame;
-use crate::power::Power;
 use crate::power::ScienceItem;
-use crate::resources::Resources;
+use crate::power::{Power, ProducedResources};
+use crate::resources::{Cost, Resource};
 use crate::wonder::{WonderBoard, WonderSide, WonderType};
 
 #[derive(Debug)]
@@ -226,51 +226,58 @@ impl Player {
         struct UsableResources {
             card: Card,
             index: u32,
-            resources: Vec<Resources>,
+            resources: Vec<Resource>,
             source: Source,
         }
 
         /// Given some own cards or a neighbour's cards, adds to `choices` the things we need to consider in order to
-        /// find all possible ways of achieving the required resources. Cards that provide only resources we don't need
-        /// are removed entirely. Cards that provide options of resources are reduced to only those resources we
-        /// require.
-        fn add_choices(
-            cards: &[Card],
-            required_resources: &Resources,
-            source: Source,
-            choices: &mut Vec<UsableResources>,
-        ) {
+        /// find all possible ways of achieving the cost. Cards that provide only resources we don't need are removed
+        /// entirely. Cards that provide options of resources are reduced to only those resources we require.
+        fn add_choices(cards: &[Card], cost: &Cost, source: Source, choices: &mut Vec<UsableResources>) {
             for card in cards {
                 match (card.power(), source) {
                     // Make sure we only borrow brown and grey cards from neighbours (not yellow).
-                    (Power::Producer(resource_options), Source::Own)
-                    | (Power::PurchasableProducer(resource_options), _) => {
-                        // Filter out single choice own cards as we'll have already dealt with these.
-                        if source != Source::Own || resource_options.len() > 1 {
-                            let resources: Vec<Resources> = resource_options
-                                .iter()
-                                .filter(|r| r.has(required_resources))
-                                .cloned()
-                                .collect();
-                            // This is a bit hacky, hopefully improve this one day: if this is a "double" resource card
-                            // (eg. sawmill), add two UsableResources with 1 resource each (so we can choose to use only
-                            // one resource or both).
-                            if resources.len() == 1 && resources[0].max() == 2 {
-                                for i in 0..2 {
+                    (Power::Producer(produced_resources), Source::Own)
+                    | (Power::PurchasableProducer(produced_resources), _) => {
+                        match produced_resources {
+                            ProducedResources::Single(resource) => {
+                                // Filter out single choice own cards as we'll have already dealt with these. Only
+                                // include the card if it has a resource we need.
+                                if source != Source::Own && cost.has(resource) {
                                     choices.push(UsableResources {
                                         card: *card,
-                                        index: i as u32,
-                                        resources: vec![resources[0].split()],
+                                        index: 0,
+                                        resources: vec![resource.clone()],
                                         source,
                                     });
                                 }
-                            } else if !resources.is_empty() {
-                                choices.push(UsableResources {
-                                    card: *card,
-                                    index: 0,
-                                    resources,
-                                    source,
-                                });
+                            }
+                            ProducedResources::Double(resource) => {
+                                // Filter out single choice own cards as we'll have already dealt with these. Add two
+                                // copies of the card so we can choose to use one resource or both.
+                                if source != Source::Own && cost.has(resource) {
+                                    for i in 0..2 {
+                                        choices.push(UsableResources {
+                                            card: *card,
+                                            index: i as u32,
+                                            resources: vec![resource.clone()],
+                                            source,
+                                        });
+                                    }
+                                }
+                            }
+                            ProducedResources::Choice(resources) => {
+                                // Filter the choices to only those we need.
+                                let resources: Vec<Resource> =
+                                    resources.iter().filter(|r| cost.has(r)).cloned().collect();
+                                if !resources.is_empty() {
+                                    choices.push(UsableResources {
+                                        card: *card,
+                                        index: 0,
+                                        resources,
+                                        source,
+                                    });
+                                }
                             }
                         }
                     }
@@ -281,17 +288,22 @@ impl Player {
 
         // Get the cost of the card, and subtract the Wonder starting resources and any non-choice resources owned by
         // the player.
-        let mut required_resources = card.cost().clone();
-        required_resources -= &self.wonder.starting_resource();
-        required_resources.coins -= self.coins;
+        let mut cost = card.cost().clone();
+        cost -= &self.wonder.starting_resource();
+        cost.coins -= self.coins;
         for card in &self.built_structures {
-            if let Power::Producer(resources) | Power::PurchasableProducer(resources) = card.power() {
-                if resources.len() == 1 {
-                    required_resources -= &resources[0];
+            if let Power::Producer(produced_resources) | Power::PurchasableProducer(produced_resources) = card.power() {
+                match produced_resources {
+                    ProducedResources::Single(resource) => cost -= resource,
+                    ProducedResources::Double(resource) => {
+                        cost -= resource;
+                        cost -= resource;
+                    }
+                    ProducedResources::Choice(_) => {}
                 }
             }
         }
-        if required_resources.satisfied() {
+        if cost.satisfied() {
             // Can afford with own resources.
             return ActionOptions {
                 actions: vec![Action::Build(*card, Borrowing::no_borrowing())],
@@ -302,16 +314,16 @@ impl Player {
         // iterate over all possible combinations of those cards. We filter our entire cards that don't have the
         // resources we need, and filter choice cards to just the resources required.
         let mut choices = vec![];
-        add_choices(&self.built_structures, &required_resources, Source::Own, &mut choices);
+        add_choices(&self.built_structures, &cost, Source::Own, &mut choices);
         add_choices(
             &visible_game.left_neighbour().built_structures,
-            &required_resources,
+            &cost,
             Source::LeftNeighbour,
             &mut choices,
         );
         add_choices(
             &visible_game.right_neighbour().built_structures,
-            &required_resources,
+            &cost,
             Source::RightNeighbour,
             &mut choices,
         );
@@ -331,7 +343,7 @@ impl Player {
             }
 
             'outer: for combination in 0..combinations {
-                let mut r = required_resources.clone();
+                let mut cost_copy = cost.clone();
                 let mut c = combination;
                 let mut left_borrowing = vec![];
                 let mut right_borrowing = vec![];
@@ -340,17 +352,17 @@ impl Player {
                     let len = choice.resources.len() + if choice.source == Source::Own { 0 } else { 1 };
                     let index = (c % len as u32) as usize;
                     if choice.source == Source::Own {
-                        r -= &choice.resources[index];
+                        cost_copy -= &choice.resources[index];
                     } else if index > 0 {
                         // TODO: cost of borrowing needs to vary depending on yellow cards.
-                        if r.coins <= -2 {
-                            if r.not_needed(&choice.resources[index - 1]) {
+                        if cost_copy.coins <= -2 {
+                            if !cost_copy.has(&choice.resources[index - 1]) {
                                 // We already have enough of whatever this option provides. Therefore, this particular
                                 // combination is not valid. Skip to the next.
                                 continue 'outer;
                             }
-                            r -= &choice.resources[index - 1];
-                            r.coins += 2;
+                            cost_copy -= &choice.resources[index - 1];
+                            cost_copy.coins += 2;
                             if choice.source == Source::LeftNeighbour {
                                 left_borrowing.push(Borrow::new(choice.card, choice.index));
                             } else {
@@ -363,7 +375,7 @@ impl Player {
                     }
                     c /= len as u32;
                 }
-                if r.satisfied() {
+                if cost_copy.satisfied() {
                     actions.push(Action::Build(*card, Borrowing::new(left_borrowing, right_borrowing)));
                 }
             }
