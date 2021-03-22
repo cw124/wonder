@@ -201,13 +201,14 @@ mod tests {
     use super::*;
     use crate::action::Borrow;
     use crate::card::Card;
+    use crate::resources::Resource;
 
     #[test]
     fn print_borrowing_options_with_single_borrow() {
         let mut out: Vec<u8> = Vec::new();
         let actions = vec![Action::Build(
             Card::Baths,
-            Borrowing::new(vec![Borrow::new(Card::StonePit, 0)], vec![]),
+            Borrowing::new(vec![Borrow::new(Card::StonePit, Resource::Stone)], vec![]),
         )];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
         assert_eq!(
@@ -223,7 +224,10 @@ mod tests {
             Card::Temple,
             Borrowing::new(
                 vec![],
-                vec![Borrow::new(Card::LumberYard, 0), Borrow::new(Card::ClayPool, 0)],
+                vec![
+                    Borrow::new(Card::LumberYard, Resource::Wood),
+                    Borrow::new(Card::ClayPool, Resource::Clay),
+                ],
             ),
         )];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
@@ -239,8 +243,8 @@ mod tests {
         let actions = vec![Action::Build(
             Card::Temple,
             Borrowing::new(
-                vec![Borrow::new(Card::LumberYard, 0)],
-                vec![Borrow::new(Card::ClayPool, 0)],
+                vec![Borrow::new(Card::LumberYard, Resource::Wood)],
+                vec![Borrow::new(Card::ClayPool, Resource::Clay)],
             ),
         )];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
@@ -256,11 +260,11 @@ mod tests {
         let actions = vec![
             Action::Build(
                 Card::Baths,
-                Borrowing::new(vec![Borrow::new(Card::StonePit, 0)], vec![]),
+                Borrowing::new(vec![Borrow::new(Card::StonePit, Resource::Stone)], vec![]),
             ),
             Action::Build(
                 Card::Baths,
-                Borrowing::new(vec![Borrow::new(Card::Excavation, 0)], vec![]),
+                Borrowing::new(vec![Borrow::new(Card::Excavation, Resource::Stone)], vec![]),
             ),
         ];
         Human::print_borrowing_options(&ActionOptions { actions }, 2, 0, &mut out);
