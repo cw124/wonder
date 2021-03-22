@@ -225,7 +225,6 @@ impl Player {
 
         struct UsableResources {
             card: Card,
-            index: u32,
             resources: Vec<Resource>,
             source: Source,
         }
@@ -246,8 +245,7 @@ impl Player {
                                 if source != Source::Own && cost.has(resource) {
                                     choices.push(UsableResources {
                                         card: *card,
-                                        index: 0,
-                                        resources: vec![resource.clone()],
+                                        resources: vec![*resource],
                                         source,
                                     });
                                 }
@@ -256,11 +254,10 @@ impl Player {
                                 // Filter out single choice own cards as we'll have already dealt with these. Add two
                                 // copies of the card so we can choose to use one resource or both.
                                 if source != Source::Own && cost.has(resource) {
-                                    for i in 0..2 {
+                                    for _ in 0..2 {
                                         choices.push(UsableResources {
                                             card: *card,
-                                            index: i as u32,
-                                            resources: vec![resource.clone()],
+                                            resources: vec![*resource],
                                             source,
                                         });
                                     }
@@ -273,7 +270,6 @@ impl Player {
                                 if !resources.is_empty() {
                                     choices.push(UsableResources {
                                         card: *card,
-                                        index: 0,
                                         resources,
                                         source,
                                     });
@@ -364,9 +360,9 @@ impl Player {
                             cost_copy -= &choice.resources[index - 1];
                             cost_copy.coins += 2;
                             if choice.source == Source::LeftNeighbour {
-                                left_borrowing.push(Borrow::new(choice.card, choice.index));
+                                left_borrowing.push(Borrow::new(choice.card, choice.resources[index - 1]));
                             } else {
-                                right_borrowing.push(Borrow::new(choice.card, choice.index));
+                                right_borrowing.push(Borrow::new(choice.card, choice.resources[index - 1]));
                             }
                         } else {
                             // Out of money for borrowing.

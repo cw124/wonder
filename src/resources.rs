@@ -4,7 +4,7 @@ use std::ops::SubAssign;
 
 use crate::utils::plural;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Resource {
     Wood,
     Stone,

@@ -1,13 +1,14 @@
 //! An action defines what a user does each turn (builds a structure, builds a wonder stage, discards a card).
 
-use crate::card::Card;
-use crate::game::VisibleGame;
-use crate::player::PublicPlayer;
-use crate::power::{Power, ProducedResources};
 use std::collections::HashSet;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::FromIterator;
+
+use crate::card::Card;
+use crate::game::VisibleGame;
+use crate::player::PublicPlayer;
+use crate::resources::Resource;
 
 /// Represents an action.
 #[allow(dead_code)]
@@ -94,28 +95,13 @@ impl Borrowing {
 pub struct Borrow {
     /// The card the resource is on.
     pub card: Card,
-    /// The index of the resource on the card that is being borrowed. Always 0 except for resources that generate two
-    /// resources in one go (ie. [`Sawmill`], [`Quarry`], [`Brickyard`], and [`Foundry`]), where the first resource is 0
-    /// and the second resource is 1.
-    pub index: u32,
+    /// The resource being borrowed.
+    pub resource: Resource,
 }
 
 impl Borrow {
-    pub fn new(card: Card, index: u32) -> Borrow {
-        if index > 1 {
-            panic!("index must be 0 or 1");
-        }
-        if let Power::PurchasableProducer(produced_resources) = card.power() {
-            if index == 1 {
-                match produced_resources {
-                    ProducedResources::Double(_) => {}
-                    _ => panic!("index can only be 1 if card is a double production card"),
-                }
-            }
-        } else {
-            panic!("Can only borrow purchasable producers")
-        }
-        Borrow { card, index }
+    pub fn new(card: Card, resource: Resource) -> Borrow {
+        Borrow { card, resource }
     }
 }
 
@@ -150,7 +136,7 @@ mod tests {
         let options = ActionOptions {
             actions: vec![Action::Build(
                 Card::Stockade,
-                Borrowing::new(vec![Borrow::new(Card::LumberYard, 0)], vec![]),
+                Borrowing::new(vec![Borrow::new(Card::LumberYard, Resource::Wood)], vec![]),
             )],
         };
         assert_eq!(false, options.own_cards_only());
