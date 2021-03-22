@@ -3,7 +3,7 @@
 use crate::card::Card;
 use crate::game::VisibleGame;
 use crate::player::PublicPlayer;
-use crate::power::Power;
+use crate::power::{Power, ProducedResources};
 use std::collections::HashSet;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -105,10 +105,15 @@ impl Borrow {
         if index > 1 {
             panic!("index must be 0 or 1");
         }
-        if let Power::Producer(resources) | Power::PurchasableProducer(resources) = card.power() {
-            if index == 1 && (resources.len() != 1 || resources[0].max() != 2) {
-                panic!("index can only be 1 if card is a double production card");
+        if let Power::PurchasableProducer(produced_resources) = card.power() {
+            if index == 1 {
+                match produced_resources {
+                    ProducedResources::Double(_) => {}
+                    _ => panic!("index can only be 1 if card is a double production card"),
+                }
             }
+        } else {
+            panic!("Can only borrow purchasable producers")
         }
         Borrow { card, index }
     }

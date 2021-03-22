@@ -1,12 +1,42 @@
-use std::cmp::max;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::ops::{AddAssign, SubAssign};
+use std::ops::SubAssign;
 
 use crate::utils::plural;
 
+#[derive(Debug, Clone)]
+pub enum Resource {
+    Wood,
+    Stone,
+    Ore,
+    Clay,
+
+    Glass,
+    Loom,
+    Papyrus,
+}
+
+impl Display for Resource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Resource::Wood => "wood",
+                Resource::Stone => "stone",
+                Resource::Ore => "ore",
+                Resource::Clay => "clay",
+                Resource::Glass => "glass",
+                Resource::Loom => "loom",
+                Resource::Papyrus => "papyrus",
+            }
+        )
+    }
+}
+
+/// The cost of a card.
 #[derive(Default, Debug, Clone)]
-pub struct Resources {
+pub struct Cost {
     pub coins: i32,
 
     pub wood: i32,
@@ -19,77 +49,70 @@ pub struct Resources {
     pub papyrus: i32,
 }
 
-impl Resources {
-    pub fn free() -> Resources {
-        Resources { ..Default::default() }
+impl Cost {
+    pub fn free() -> Cost {
+        Cost { ..Default::default() }
     }
 
-    pub fn coins(num: i32) -> Resources {
-        Resources {
+    pub fn coins(num: i32) -> Cost {
+        Cost {
             coins: num,
             ..Default::default()
         }
     }
 
-    pub fn wood(num: i32) -> Resources {
-        Resources {
+    pub fn wood(num: i32) -> Cost {
+        Cost {
             wood: num,
             ..Default::default()
         }
     }
 
-    pub fn stone(num: i32) -> Resources {
-        Resources {
+    pub fn stone(num: i32) -> Cost {
+        Cost {
             stone: num,
             ..Default::default()
         }
     }
 
-    pub fn ore(num: i32) -> Resources {
-        Resources {
+    pub fn ore(num: i32) -> Cost {
+        Cost {
             ore: num,
             ..Default::default()
         }
     }
 
-    pub fn clay(num: i32) -> Resources {
-        Resources {
+    pub fn clay(num: i32) -> Cost {
+        Cost {
             clay: num,
             ..Default::default()
         }
     }
 
-    pub fn glass(num: i32) -> Resources {
-        Resources {
+    pub fn glass(num: i32) -> Cost {
+        Cost {
             glass: num,
             ..Default::default()
         }
     }
 
-    pub fn loom(num: i32) -> Resources {
-        Resources {
+    pub fn loom(num: i32) -> Cost {
+        Cost {
             loom: num,
             ..Default::default()
         }
     }
 
-    pub fn papyrus(num: i32) -> Resources {
-        Resources {
+    pub fn papyrus(num: i32) -> Cost {
+        Cost {
             papyrus: num,
             ..Default::default()
         }
     }
 
-    // TODO: the below methods (satisfied, has, not_needed, max, split) are pretty weird and hacky. I think maybe we
-    //  need to separate the concept of an overall Resources object as we have today, representing something like the
-    //  cost of building a card (eg. the Town Hall: 1 glass, 1 ore, 2 stone); and the concept of a resource as provided
-    //  by a built brown, grey, or yellow card, which is always (possibly a choice of) a single resource type. They work
-    //  slightly differently, are needed for different things, but occasionally interact when we need to add up
-    //  instances of the latter to see if we can get to the former.
-
     /// Returns true if and only if all individual resource counts are at zero or below. If a cost is initialised as a
-    /// Resources object and then available resources are subtracted from it, then this returns true if there were
-    /// enough resources to afford the cost.
+    /// Cost object and then available resources are subtracted from it, then this returns true if there were enough
+    /// resources to afford the cost.
     pub fn satisfied(&self) -> bool {
         self.coins <= 0
             && self.wood <= 0
@@ -101,89 +124,36 @@ impl Resources {
             && self.papyrus <= 0
     }
 
-    /// Returns true if and only if this resource has at least one of each individual resource the given Resources
-    /// object has.
-    pub fn has(&self, required: &Resources) -> bool {
-        required.coins > 0 && self.coins > 0
-            || required.wood > 0 && self.wood > 0
-            || required.stone > 0 && self.stone > 0
-            || required.ore > 0 && self.ore > 0
-            || required.clay > 0 && self.clay > 0
-            || required.glass > 0 && self.glass > 0
-            || required.loom > 0 && self.loom > 0
-            || required.papyrus > 0 && self.papyrus > 0
-    }
-
-    /// Returns true if and only if, for some individual resource, the given Resources object has that resource and this
-    /// one does not.
-    pub fn not_needed(&self, r: &Resources) -> bool {
-        (r.wood > 0 && self.wood <= 0)
-            || (r.stone > 0 && self.stone <= 0)
-            || (r.ore > 0 && self.ore <= 0)
-            || (r.clay > 0 && self.clay <= 0)
-            || (r.glass > 0 && self.glass <= 0)
-            || (r.loom > 0 && self.loom <= 0)
-            || (r.papyrus > 0 && self.papyrus <= 0)
-    }
-
-    /// Returns the maximum number of items of any given single resource.
-    pub fn max(&self) -> i32 {
-        max(
-            self.wood,
-            max(
-                self.stone,
-                max(self.ore, max(self.clay, max(self.glass, max(self.loom, self.papyrus)))),
-            ),
-        )
-    }
-
-    /// Returns a new Resources object with each individual resource quantity halved.
-    pub fn split(&self) -> Resources {
-        Resources {
-            coins: self.coins,
-            wood: self.wood / 2,
-            stone: self.stone / 2,
-            ore: self.ore / 2,
-            clay: self.clay / 2,
-            glass: self.glass / 2,
-            loom: self.loom / 2,
-            papyrus: self.papyrus / 2,
+    /// Returns true if and only if this cost includes at least one of the given resource.
+    pub fn has(&self, resource: &Resource) -> bool {
+        match resource {
+            Resource::Wood => self.wood > 0,
+            Resource::Stone => self.stone > 0,
+            Resource::Ore => self.ore > 0,
+            Resource::Clay => self.clay > 0,
+            Resource::Glass => self.glass > 0,
+            Resource::Loom => self.loom > 0,
+            Resource::Papyrus => self.papyrus > 0,
         }
     }
 }
 
-impl AddAssign<&Resources> for Resources {
-    fn add_assign(&mut self, other: &Self) {
-        *self = Self {
-            coins: self.coins + other.coins,
-            wood: self.wood + other.wood,
-            stone: self.stone + other.stone,
-            ore: self.ore + other.ore,
-            clay: self.clay + other.clay,
-            glass: self.glass + other.glass,
-            loom: self.loom + other.loom,
-            papyrus: self.papyrus + other.papyrus,
-        }
-    }
-}
-
-impl SubAssign<&Resources> for Resources {
-    fn sub_assign(&mut self, other: &Self) {
-        *self = Self {
-            coins: self.coins - other.coins,
-            wood: self.wood - other.wood,
-            stone: self.stone - other.stone,
-            ore: self.ore - other.ore,
-            clay: self.clay - other.clay,
-            glass: self.glass - other.glass,
-            loom: self.loom - other.loom,
-            papyrus: self.papyrus - other.papyrus,
+impl SubAssign<&Resource> for Cost {
+    fn sub_assign(&mut self, resource: &Resource) {
+        match resource {
+            Resource::Wood => self.wood -= 1,
+            Resource::Stone => self.stone -= 1,
+            Resource::Ore => self.ore -= 1,
+            Resource::Clay => self.clay -= 1,
+            Resource::Glass => self.glass -= 1,
+            Resource::Loom => self.loom -= 1,
+            Resource::Papyrus => self.papyrus -= 1,
         }
     }
 }
 
 /// Example formatting: `2 wood, 1 glass, 1 papyrus`
-impl Display for Resources {
+impl Display for Cost {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         fn add_if_non_zero(count: i32, resource: &str, resources: &mut Vec<String>) {
             if count > 0 {

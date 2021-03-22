@@ -89,7 +89,6 @@ impl Human {
     /// asks the user for their action.
     fn ask_for_action(player: &Player, visible_game: &VisibleGame) -> Action {
         // TODO: Support building a wonder stage.
-        // TODO: Support borrowing resources from neighbours.
 
         println!();
         println!();

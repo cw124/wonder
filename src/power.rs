@@ -8,18 +8,16 @@ use itertools::Itertools;
 use strum_macros::EnumIter;
 
 use crate::card::{Card, Colour};
-use crate::resources::Resources;
+use crate::resources::Resource;
 use crate::utils::plural;
 
 /// Represents what a card or a wonder stage does for a player (for example, delivers victory points, or gives access to
 /// a scientific structure).
 pub enum Power {
-    /// Produces resources that are purchasable by a neighbour (ie. brown and grey cards). The vector contains a single
-    /// [`Resources`] item for normal resources, or more than one to represent a choice of resources.
-    PurchasableProducer(Vec<Resources>),
-    /// Produces resources that are not purchasable by a neighbour. The vector contains a single [`Resources`] item for
-    /// normal resources, or more than one to represent a choice of resources.
-    Producer(Vec<Resources>),
+    /// Produces resources that are purchasable by a neighbour (ie. brown and grey cards).
+    PurchasableProducer(ProducedResources),
+    /// Produces resources that are not purchasable by a neighbour (ie. yellow cards).
+    Producer(ProducedResources),
     /// Provides victory points.
     VictoryPoints(u32),
     /// Provides coins.
@@ -76,8 +74,21 @@ impl Display for Power {
             f,
             "{}",
             match self {
-                Power::PurchasableProducer(resources) => format!("{}", resources.iter().format(" or ")),
-                Power::Producer(resources) => format!("{}", resources.iter().format(" or ")),
+                Power::PurchasableProducer(produced_resources) | Power::Producer(produced_resources) => {
+                    match produced_resources {
+                        ProducedResources::Single(resource) => format!("1 {}", resource),
+                        ProducedResources::Double(resource) => format!("2 {}", resource),
+                        ProducedResources::Choice(resources) => {
+                            format!(
+                                "{}",
+                                resources
+                                    .iter()
+                                    .map(|resource| format!("1 {}", resource))
+                                    .format(" or ")
+                            )
+                        }
+                    }
+                }
                 Power::VictoryPoints(points) => plural(*points as i32, "VP"),
                 Power::Coins(coins) => plural(*coins as i32, "coin"),
                 Power::BuyBrownAntiClockwise => "Buy brown cards for 1 coin anti-clockwise".to_string(),
@@ -92,6 +103,17 @@ impl Display for Power {
             }
         )
     }
+}
+
+/// Represents brown, grey, and yellow resource cards.
+#[derive(Clone)]
+pub enum ProducedResources {
+    /// Produces a single resource.
+    Single(Resource),
+    /// Produces two instances of a resource.
+    Double(Resource),
+    /// Produces one resource for a set of possible resources.
+    Choice(Vec<Resource>),
 }
 
 /// Represents the three different symbols found on Science (ie. green) cards.
