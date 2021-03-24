@@ -1,13 +1,9 @@
 //! An action defines what a user does each turn (builds a structure, builds a wonder stage, discards a card).
 
-use std::collections::HashSet;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::iter::FromIterator;
 
 use crate::card::Card;
-use crate::game::VisibleGame;
-use crate::player::PublicPlayer;
 use crate::resources::Resource;
 
 /// Represents an action.
@@ -73,15 +69,6 @@ impl Borrowing {
     /// Convenience constructor when no borrowing is required.
     pub fn no_borrowing() -> Borrowing {
         Self::new(vec![], vec![])
-    }
-
-    /// Returns true if this borrowing plan is possible for the given game state.
-    pub fn valid(&self, visible_game: &VisibleGame) -> bool {
-        fn valid_on(borrows: &[Borrow], neighbour: &PublicPlayer) -> bool {
-            let neighbour_structures = HashSet::<&Card>::from_iter(&neighbour.built_structures);
-            borrows.iter().all(|borrow| neighbour_structures.contains(&borrow.card))
-        }
-        valid_on(&self.left, &visible_game.left_neighbour()) && valid_on(&self.right, &visible_game.right_neighbour())
     }
 
     /// Returns true if this borrowing plan has not borrowing (ie. the player can use their own cards exclusively).
