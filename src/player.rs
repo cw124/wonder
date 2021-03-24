@@ -338,11 +338,13 @@ impl Player {
                 }
             }
 
+            let mut left_borrowing = vec![];
+            let mut right_borrowing = vec![];
             'outer: for combination in 0..combinations {
                 let mut cost_copy = cost.clone();
                 let mut c = combination;
-                let mut left_borrowing = vec![];
-                let mut right_borrowing = vec![];
+                left_borrowing.clear();
+                right_borrowing.clear();
                 for choice in &choices {
                     // If own resource, always include it. If neighbours', also try without it.
                     let len = choice.resources.len() + if choice.source == Source::Own { 0 } else { 1 };
@@ -372,7 +374,10 @@ impl Player {
                     c /= len as u32;
                 }
                 if cost_copy.satisfied() {
-                    actions.push(Action::Build(*card, Borrowing::new(left_borrowing, right_borrowing)));
+                    actions.push(Action::Build(
+                        *card,
+                        Borrowing::new(left_borrowing.clone(), right_borrowing.clone()),
+                    ));
                 }
             }
         }
