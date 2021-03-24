@@ -181,22 +181,73 @@ impl Player {
     /// Returns `true` if the user can afford to play the given card, given the resources the player
     /// has access to.
     fn can_play_card(&self, card: &Card, borrowing: &Borrowing, visible_game: &VisibleGame) -> bool {
-        // Can't play if the player doesn't have the card in hand, or the neighbours haven't built the cards being
-        // borrowed.
-        if !self.hand.iter().any(|c| c == card) || !borrowing.valid(visible_game) {
+        /// Checks the given borrows against the given player, making sure the player has the right cards available.
+        /// The resources provided by the borrows are subtracted from `cost`, and the coins needed for the borrows are
+        /// added to `cost`.
+        fn check(borrows: &[Borrow], public_player: &PublicPlayer, cost: &mut Cost) -> bool {
+            let mut choices = vec![];
+            add_choices(
+                &public_player.built_structures,
+                &cost,
+                Source::LeftNeighbour, // Doesn't really matter as long as not Source::Own
+                &mut choices,
+            );
+            for borrow in borrows {
+                // Find and remove a card that matches. If we can't find one, the borrow is illegal.
+                let choice = choices
+                    .iter()
+                    .position(|usable| usable.card == borrow.card && usable.resources.contains(&borrow.resource))
+                    .map(|index| choices.swap_remove(index));
+                match choice {
+                    Some(_) => {
+                        *cost -= &borrow.resource;
+                        cost.coins += 2; // TODO: cost of borrowing needs to vary depending on yellow cards.
+                    }
+                    None => return false,
+                }
+            }
+            true
+        }
+
+        // Can't play if the player doesn't have the card in hand.
+        if !self.hand.iter().any(|c| c == card) {
             return false;
         }
 
-        // Can play if the borrowing being proposed (possibly no borrowing) is one of the options available, given the
-        // neighbour's resources and the player's coins.
-        //
-        // TODO: it's a bit inefficient to calculate this again. Perhaps an action should exactly define what's
-        //  happening so we can directly check it.
-        for action in self.options_for_card(card, visible_game).actions {
-            if let Action::Build(_, borrowing1) = action {
-                if borrowing1 == *borrowing {
-                    return true;
-                }
+        // Reduce the cost of the card by the player's own non choice resources, then check borrowing to left and right
+        // is legal and reduce the cost by the resources provided there too.
+        let mut cost = card.cost().clone();
+        self.reduce_by_own_resources(&mut cost);
+
+        if !check(&borrowing.left, &visible_game.left_neighbour(), &mut cost) {
+            return false;
+        }
+        if !(check(&borrowing.right, &visible_game.right_neighbour(), &mut cost)) {
+            return false;
+        }
+
+        // We're left with our own choice cards. Ideally the borrowing definition would say exactly which own cards
+        // we're using too, but it doesn't yet (and may never because it's expensive to add this information). So
+        // iterate over all possible combinations to see if one works.
+        let mut choices = vec![];
+        add_choices(&self.built_structures, &cost, Source::Own, &mut choices);
+
+        let mut combinations = 1;
+        for choice in &choices {
+            combinations *= choice.resources.len() as u32;
+        }
+
+        for combination in 0..combinations {
+            let mut cost_copy = cost.clone();
+            let mut c = combination;
+            for choice in &choices {
+                let len = choice.resources.len();
+                let index = (c % len as u32) as usize;
+                cost_copy -= &choice.resources[index];
+                c /= len as u32;
+            }
+            if cost_copy.satisfied() {
+                return true;
             }
         }
 
@@ -216,89 +267,10 @@ impl Player {
     /// Note this function doesn't verify the cards the player has in their hand, meaning `card` can be a card the
     /// player doesn't have. As long as they can afford it, valid actions will be returned to achieve it.
     pub fn options_for_card(&self, card: &Card, visible_game: &VisibleGame) -> ActionOptions {
-        #[derive(Copy, Clone, Eq, PartialEq)]
-        enum Source {
-            Own,
-            LeftNeighbour,
-            RightNeighbour,
-        }
-
-        struct UsableResources {
-            card: Card,
-            resources: Vec<Resource>,
-            source: Source,
-        }
-
-        /// Given some own cards or a neighbour's cards, adds to `choices` the things we need to consider in order to
-        /// find all possible ways of achieving the cost. Cards that provide only resources we don't need are removed
-        /// entirely. Cards that provide options of resources are reduced to only those resources we require.
-        fn add_choices(cards: &[Card], cost: &Cost, source: Source, choices: &mut Vec<UsableResources>) {
-            for card in cards {
-                match (card.power(), source) {
-                    // Make sure we only borrow brown and grey cards from neighbours (not yellow).
-                    (Power::Producer(produced_resources), Source::Own)
-                    | (Power::PurchasableProducer(produced_resources), _) => {
-                        match produced_resources {
-                            ProducedResources::Single(resource) => {
-                                // Filter out single choice own cards as we'll have already dealt with these. Only
-                                // include the card if it has a resource we need.
-                                if source != Source::Own && cost.has(resource) {
-                                    choices.push(UsableResources {
-                                        card: *card,
-                                        resources: vec![*resource],
-                                        source,
-                                    });
-                                }
-                            }
-                            ProducedResources::Double(resource) => {
-                                // Filter out single choice own cards as we'll have already dealt with these. Add two
-                                // copies of the card so we can choose to use one resource or both.
-                                if source != Source::Own && cost.has(resource) {
-                                    for _ in 0..2 {
-                                        choices.push(UsableResources {
-                                            card: *card,
-                                            resources: vec![*resource],
-                                            source,
-                                        });
-                                    }
-                                }
-                            }
-                            ProducedResources::Choice(resources) => {
-                                // Filter the choices to only those we need.
-                                let resources: Vec<Resource> =
-                                    resources.iter().filter(|r| cost.has(r)).cloned().collect();
-                                if !resources.is_empty() {
-                                    choices.push(UsableResources {
-                                        card: *card,
-                                        resources,
-                                        source,
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        }
-
         // Get the cost of the card, and subtract the Wonder starting resources and any non-choice resources owned by
         // the player.
         let mut cost = card.cost().clone();
-        cost -= &self.wonder.starting_resource();
-        cost.coins -= self.coins;
-        for card in &self.built_structures {
-            if let Power::Producer(produced_resources) | Power::PurchasableProducer(produced_resources) = card.power() {
-                match produced_resources {
-                    ProducedResources::Single(resource) => cost -= resource,
-                    ProducedResources::Double(resource) => {
-                        cost -= resource;
-                        cost -= resource;
-                    }
-                    ProducedResources::Choice(_) => {}
-                }
-            }
-        }
+        self.reduce_by_own_resources(&mut cost);
         if cost.satisfied() {
             // Can afford with own resources.
             return ActionOptions {
@@ -383,6 +355,90 @@ impl Player {
         }
 
         ActionOptions { actions }
+    }
+
+    /// Reduces `cost` by the resources provided by this player's built structures, their coins, and their wonder's
+    /// starting resource. "Choice" resources are not used.
+    fn reduce_by_own_resources(&self, cost: &mut Cost) {
+        *cost -= &self.wonder.starting_resource();
+        cost.coins -= self.coins;
+        for card in &self.built_structures {
+            if let Power::Producer(produced_resources) | Power::PurchasableProducer(produced_resources) = card.power() {
+                match produced_resources {
+                    ProducedResources::Single(resource) => *cost -= resource,
+                    ProducedResources::Double(resource) => {
+                        *cost -= resource;
+                        *cost -= resource;
+                    }
+                    ProducedResources::Choice(_) => {}
+                }
+            }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+enum Source {
+    Own,
+    LeftNeighbour,
+    RightNeighbour,
+}
+
+struct UsableResources {
+    card: Card,
+    resources: Vec<Resource>,
+    source: Source,
+}
+
+/// Given some own cards or a neighbour's cards, adds to `choices` the things we need to consider in order to
+/// find all possible ways of achieving the cost. Cards that provide only resources we don't need are removed
+/// entirely. Cards that provide options of resources are reduced to only those resources we require.
+fn add_choices(cards: &[Card], cost: &Cost, source: Source, choices: &mut Vec<UsableResources>) {
+    for card in cards {
+        match (card.power(), source) {
+            // Make sure we only borrow brown and grey cards from neighbours (not yellow).
+            (Power::Producer(produced_resources), Source::Own)
+            | (Power::PurchasableProducer(produced_resources), _) => {
+                match produced_resources {
+                    ProducedResources::Single(resource) => {
+                        // Filter out single choice own cards as we'll have already dealt with these. Only
+                        // include the card if it has a resource we need.
+                        if source != Source::Own && cost.has(resource) {
+                            choices.push(UsableResources {
+                                card: *card,
+                                resources: vec![*resource],
+                                source,
+                            });
+                        }
+                    }
+                    ProducedResources::Double(resource) => {
+                        // Filter out single choice own cards as we'll have already dealt with these. Add two
+                        // copies of the card so we can choose to use one resource or both.
+                        if source != Source::Own && cost.has(resource) {
+                            for _ in 0..2 {
+                                choices.push(UsableResources {
+                                    card: *card,
+                                    resources: vec![*resource],
+                                    source,
+                                });
+                            }
+                        }
+                    }
+                    ProducedResources::Choice(resources) => {
+                        // Filter the choices to only those we need.
+                        let resources: Vec<Resource> = resources.iter().filter(|r| cost.has(r)).cloned().collect();
+                        if !resources.is_empty() {
+                            choices.push(UsableResources {
+                                card: *card,
+                                resources,
+                                source,
+                            });
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
     }
 }
 
@@ -757,7 +813,7 @@ mod tests {
     }
 
     #[test]
-    fn can_play_returns_false_if_borrowing_not_possible() {
+    fn can_play_returns_false_if_borrowing_required_but_not_specified() {
         // Stockade requires 1 wood, we *can* borrow from a neighbour, but our action says we're not doing any borrowing.
         let player = new_player(vec![Stockade]);
         let public_players = players_with_resources(vec![LumberYard], vec![]);
@@ -765,6 +821,85 @@ mod tests {
             false,
             player.can_play(
                 &Action::Build(Stockade, Borrowing::no_borrowing()),
+                &visible_game(&public_players)
+            )
+        );
+    }
+
+    #[test]
+    fn can_play_returns_false_if_borrowing_not_possible() {
+        // Stockade requires 1 wood, we say we'll borrow from a neighbour, but the neighbour doesn't have the card.
+        let player = new_player(vec![Stockade]);
+        assert_eq!(
+            false,
+            player.can_play(
+                &Action::Build(
+                    Stockade,
+                    Borrowing::new(vec![Borrow::new(LumberYard, Resource::Wood)], vec![])
+                ),
+                &visible_game(&players())
+            )
+        );
+    }
+
+    #[test]
+    fn can_play_returns_false_if_borrowing_not_possible2() {
+        // Archery range requires 2 wood (and 1 ore), we say we'll borrow the wood from a neighbour, but the neighbour
+        // only has one wood.
+        let mut player = new_player(vec![ArcheryRange, OreVein]);
+        player.coins = 4;
+        build(&mut player, OreVein);
+        let public_players = players_with_resources(vec![LumberYard], vec![]);
+        assert_eq!(
+            false,
+            player.can_play(
+                &Action::Build(
+                    ArcheryRange,
+                    Borrowing::new(
+                        vec![
+                            Borrow::new(LumberYard, Resource::Wood),
+                            Borrow::new(LumberYard, Resource::Wood)
+                        ],
+                        vec![]
+                    )
+                ),
+                &visible_game(&public_players)
+            )
+        );
+    }
+
+    #[test]
+    fn can_play_returns_false_if_borrowing_not_possible3() {
+        // Stockade requires 1 wood, we say we'll borrow from a neighbour, but don't have enough coins.
+        let mut player = new_player(vec![Stockade]);
+        player.coins = 1;
+        let public_players = players_with_resources(vec![LumberYard], vec![]);
+        assert_eq!(
+            false,
+            player.can_play(
+                &Action::Build(
+                    Stockade,
+                    Borrowing::new(vec![Borrow::new(LumberYard, Resource::Wood)], vec![])
+                ),
+                &visible_game(&public_players)
+            )
+        );
+    }
+
+    #[test]
+    fn can_play_returns_false_if_borrowing_not_possible4() {
+        // Stockade requires 1 wood, we say we'll borrow from a neighbour, but the card we try to borrow doesn't produce
+        // wood.
+        let mut player = new_player(vec![Stockade]);
+        player.coins = 1;
+        let public_players = players_with_resources(vec![StonePit], vec![]);
+        assert_eq!(
+            false,
+            player.can_play(
+                &Action::Build(
+                    Stockade,
+                    Borrowing::new(vec![Borrow::new(LumberYard, Resource::Wood)], vec![])
+                ),
                 &visible_game(&public_players)
             )
         );
