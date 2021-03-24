@@ -1,3 +1,5 @@
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::mem;
@@ -264,9 +266,13 @@ impl Player {
     ///
     /// If the player cannot play the card, an empty vector is returned.
     ///
+    /// If `single_option` is `true`, only a single option will be returned, even if multiple are possible. The option
+    /// returned is selected at random from those available. This can be much more efficient if only a single option is
+    /// required as we can stop as soon as we find a valid option.
+    ///
     /// Note this function doesn't verify the cards the player has in their hand, meaning `card` can be a card the
     /// player doesn't have. As long as they can afford it, valid actions will be returned to achieve it.
-    pub fn options_for_card(&self, card: &Card, visible_game: &VisibleGame) -> ActionOptions {
+    pub fn options_for_card(&self, card: &Card, visible_game: &VisibleGame, single_option: bool) -> ActionOptions {
         // Get the cost of the card, and subtract the Wonder starting resources and any non-choice resources owned by
         // the player.
         let mut cost = card.cost().clone();
@@ -283,6 +289,7 @@ impl Player {
         // resources we need, and filter choice cards to just the resources required.
         let mut choices = vec![];
         add_choices(&self.built_structures, &cost, Source::Own, &mut choices);
+        let own_choices_count = choices.len();
         add_choices(
             &visible_game.left_neighbour().built_structures,
             &cost,
@@ -295,6 +302,13 @@ impl Player {
             Source::RightNeighbour,
             &mut choices,
         );
+
+        // If returning a single option, shuffle the choices so we select the option returned at random. Own choices
+        // must always come before neighbour choices, though, so we don't over-borrow.
+        if single_option {
+            choices[..own_choices_count].shuffle(&mut thread_rng());
+            choices[own_choices_count..].shuffle(&mut thread_rng());
+        }
 
         let mut actions = vec![];
         if !choices.is_empty() {
@@ -350,6 +364,9 @@ impl Player {
                         *card,
                         Borrowing::new(left_borrowing.clone(), right_borrowing.clone()),
                     ));
+                    if single_option {
+                        break 'outer;
+                    }
                 }
             }
         }
@@ -476,7 +493,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&Stockade, &visible_game(&players()))
+                .options_for_card(&Stockade, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -490,7 +507,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&TreeFarm, &visible_game(&players()))
+                .options_for_card(&TreeFarm, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -503,7 +520,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Barracks, &visible_game(&players()))
+                .options_for_card(&Barracks, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -516,7 +533,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&TreeFarm, &visible_game(&players()))
+                .options_for_card(&TreeFarm, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -529,7 +546,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&LumberYard, &visible_game(&players()))
+                .options_for_card(&LumberYard, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -543,7 +560,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Stockade, &visible_game(&players()))
+                .options_for_card(&Stockade, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -558,7 +575,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&Temple, &visible_game(&players()))
+                .options_for_card(&Temple, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -573,7 +590,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Stockade, &visible_game(&players()))
+                .options_for_card(&Stockade, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -588,7 +605,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Caravansery, &visible_game(&players()))
+                .options_for_card(&Caravansery, &visible_game(&players()), false)
                 .actions
                 .len()
         );
@@ -602,7 +619,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Stockade, &visible_game(&public_players))
+                .options_for_card(&Stockade, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -617,7 +634,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&Stockade, &visible_game(&public_players))
+                .options_for_card(&Stockade, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -632,7 +649,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&Caravansery, &visible_game(&public_players))
+                .options_for_card(&Caravansery, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -647,7 +664,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&Caravansery, &visible_game(&public_players))
+                .options_for_card(&Caravansery, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -661,7 +678,22 @@ mod tests {
         assert_eq!(
             2,
             player
-                .options_for_card(&Stockade, &visible_game(&public_players))
+                .options_for_card(&Stockade, &visible_game(&public_players), false)
+                .actions
+                .len()
+        );
+    }
+
+    #[test]
+    fn options_for_card_returns_one_option_if_requested() {
+        // Stockade requires 1 wood, we can borrow from either neighbour, resulting in two options, but we ask for just
+        //one to be returned.
+        let player = new_player(vec![]);
+        let public_players = players_with_resources(vec![LumberYard], vec![TreeFarm]);
+        assert_eq!(
+            1,
+            player
+                .options_for_card(&Stockade, &visible_game(&public_players), true)
                 .actions
                 .len()
         );
@@ -676,7 +708,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Caravansery, &visible_game(&public_players))
+                .options_for_card(&Caravansery, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -692,7 +724,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Stockade, &visible_game(&public_players))
+                .options_for_card(&Stockade, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -708,7 +740,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Stockade, &visible_game(&public_players))
+                .options_for_card(&Stockade, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -728,7 +760,7 @@ mod tests {
         assert_eq!(
             6,
             player
-                .options_for_card(&Laboratory, &visible_game(&public_players))
+                .options_for_card(&Laboratory, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -747,7 +779,7 @@ mod tests {
         assert_eq!(
             1,
             player
-                .options_for_card(&Aqueduct, &visible_game(&public_players))
+                .options_for_card(&Aqueduct, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -761,7 +793,7 @@ mod tests {
         assert_eq!(
             0,
             player
-                .options_for_card(&Stockade, &visible_game(&public_players))
+                .options_for_card(&Stockade, &visible_game(&public_players), false)
                 .actions
                 .len()
         );
@@ -775,7 +807,10 @@ mod tests {
         build(&mut player, Caravansery);
         assert_eq!(
             1,
-            player.options_for_card(&Baths, &visible_game(&players())).actions.len()
+            player
+                .options_for_card(&Baths, &visible_game(&players()), false)
+                .actions
+                .len()
         );
     }
 

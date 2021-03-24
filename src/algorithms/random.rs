@@ -21,13 +21,9 @@ pub fn get_next_action(player: &Player, visible_game: &VisibleGame) -> Action {
     let action_to_take = player
         .hand()
         .iter()
-        .map(|card| player.options_for_card(card, visible_game))
+        .map(|card| player.options_for_card(card, visible_game, true))
         .filter(|actions| actions.possible())
-        .map(|mut actions| {
-            actions
-                .actions
-                .swap_remove(thread_rng().gen_range(0, actions.actions.len()))
-        })
+        .map(|mut actions| actions.actions.swap_remove(0))
         .choose(&mut thread_rng());
 
     match action_to_take {

@@ -61,7 +61,7 @@ impl Human {
             .iter()
             .enumerate()
             .map(|(i, card)| {
-                let options = player.options_for_card(card, visible_game);
+                let options = player.options_for_card(card, visible_game, false);
                 let playability = if !options.possible() {
                     "  "
                 } else if options.own_cards_only() {
@@ -108,7 +108,7 @@ impl Human {
                 io::stdin().read_line(&mut choice).unwrap();
                 match choice.trim().to_lowercase().as_str() {
                     "b" => {
-                        let options = player.options_for_card(&card, visible_game);
+                        let options = player.options_for_card(&card, visible_game, false);
                         if options.own_cards_only() || !options.possible() {
                             // Use own cards, or action not possible (which is caught later).
                             break Action::Build(card, Borrowing::no_borrowing());
