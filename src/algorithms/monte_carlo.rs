@@ -21,7 +21,7 @@ impl PlayingAlgorithm for MonteCarlo {
         // Build a vector of possible actions. We'll evaluate the strength of each and pick the best.
         let mut action_options = Vec::new();
         for card in player.hand() {
-            let mut options = player.options_for_card(card, visible_game);
+            let mut options = player.options_for_card(card, visible_game, false);
             if options.possible() {
                 // TODO: for now, just take one option. This will be the only option if the card can be played without
                 //  borrowing; otherwise in many cases it will be the one-and-only borrow option. Sometimes, though,
